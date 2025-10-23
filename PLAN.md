@@ -1,0 +1,4 @@
+- copy over opengl test code
+- add an extra rectangle
+- make it moveable
+- make it textureable?
