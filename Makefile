@@ -1,13 +1,20 @@
 CMD = gcc
-
-FILES = main.c util/util.c
-
+SRC = main.c util/util.c rend/rend.c
+OBJ = $(SRC:.c=.o)
 INC = -I . -I /opt/homebrew/include
+LNK = -L /opt/homebrew/lib -lSDL2
+OUT = out
 
-LINK = -L /opt/homebrew/lib -lSDL2
 
-OUT = -o prog
+all : ${OBJ}
+# 	clear
+	${CMD} $^ ${INC} ${LNK} -Wall -pedantic -Wextra -o ${OUT}
 
-all : compile
-compile:
-	@${CC} ${FILES} ${INC} ${LINK} ${OUT}
+${OBJ} : %.o: %.c
+#	clear
+	${CMD} ${INC} ${LNK} -Wall -pedantic -Wextra -c $^ -o $@
+
+
+clean :
+	@find . -type f -name '*.o' -delete
+	@rm ${OUT}

@@ -1,28 +1,24 @@
 #include <stdio.h>
 
 #include "util/util.h"
+#include "rend/rend.h"
 
 // expand this into a whole seperate thing with `rend` as object static to file
 // along with background colour and whatever else
-void rend_sq(SDL_Renderer *rend) {
-        static int r = 30;
-        static int g = 45;
-        static int b = 240;
-        static SDL_Rect rc = { 50, 50, 300, 300 };
+void rend_sq() {
+        static struct col       c       = { 30, 45, 240 };
+        static SDL_Rect         rc      = { 50, 50, 300, 300 };
 
-        SDL_SetRenderDrawColor(rend, 255, 90, 120, 255);
-        SDL_RenderClear(rend);
+        rend_cl();
 
-        SDL_SetRenderDrawColor(rend, r, g, b, 255);
-        SDL_RenderFillRect(rend, &rc);
+        rend_rc(rc, c);
 
-        SDL_RenderPresent(rend);
+        push_rend();
 
-        r = (g - 50) % 255; 
-        g = (b - 20) % 255;
-        b = (r + 20) % 255;
+        c.r = (c.g - 50) % 255; 
+        c.g = (c.b - 20) % 255;
+        c.b = (c.r + 20) % 255;
 }
-
 
 int main() {
         SDL_Window  *win   = NULL;
@@ -31,10 +27,12 @@ int main() {
                 printf("Failed to initalise SDL.\n");
         }
 
-        SDL_Renderer* rend = NULL;
-        rend = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
+        init_rend(win);
 
-        rend_sq(rend);
+        struct col clr = { 255, 90, 120 };
+        set_rendcl(clr);
+
+        rend_sq();
 
         SDL_Event e;
         int run = TRUE;
@@ -45,7 +43,7 @@ int main() {
                         }
                         if (SDL_KEYDOWN == e.type) {
                                 if (SDLK_c == e.key.keysym.sym) {
-                                        rend_sq(rend);
+                                        rend_sq();
                                 } else { 
                                         run = FALSE;
                                 }
