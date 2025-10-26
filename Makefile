@@ -1,9 +1,9 @@
 CMD = gcc
-SRC = main.c util/util.c rend/rend.c
+SRC = main.c util/util.c rend/rend.c rc_man/rc_man.c
 OBJ = $(SRC:.c=.o)
 INC = -I . -I /opt/homebrew/include
 LNK = -L /opt/homebrew/lib -lSDL2
-OUT = out
+OUT = ge
 
 
 all : ${OBJ}
