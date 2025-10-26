@@ -40,6 +40,23 @@ void init_rc_man(
         rc_man.id_n = 1;
 }
 
+void dest_rc_man(
+        void
+) {
+        struct rc *rcc = rc_man.root.next;
+        struct rc *rcn;
+
+        for (;;) {
+                if (NULL == rcc) {
+                        break;
+                }
+
+                rcn = rcc->next;
+                free(rcc);
+                rcc = rcn;
+        }
+}
+
 int create_rc(
         int             w       ,
         int             h       ,
@@ -52,7 +69,6 @@ int create_rc(
         SDL_Rect        bb      = { x, y, w, h };
         struct col      cl      = { r, g, b };
 
-        // will need destroy function
         rc_man.head->next = calloc(1, sizeof(struct rc));
 
         rc_man.head->next->rid    = rc_man.id_n ;

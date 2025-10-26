@@ -10,6 +10,10 @@ void init_rc_man(
         void
 );
 
+void dest_rc_man(
+        void
+);
+
 int create_rc(
         int             w       ,
         int             h       ,

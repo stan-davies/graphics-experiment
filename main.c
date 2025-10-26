@@ -51,6 +51,7 @@ int main(
                 }
         }
 
+        dest_rc_man();
         end_sdl(&win);
         return 0;
 }
