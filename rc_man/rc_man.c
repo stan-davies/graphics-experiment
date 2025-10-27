@@ -100,6 +100,23 @@ void rc_recol(
         sub->cl.b = b;
 }
 
+void rc_repos(
+        int             rid     ,
+        int             x       ,
+        int             y
+) {
+        struct rc *sub = find_rc(rid);
+
+        if (!sub) {
+                rc_man.err = RCERR_RECOL_NF;
+                printf("bad repos\n");
+                return;
+        }
+
+        sub->bb.x = x;
+        sub->bb.y = y;
+}
+
 void draw_rc(
         int             rid
 ) {

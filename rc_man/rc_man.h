@@ -14,6 +14,7 @@ void dest_rc_man(
         void
 );
 
+// Could probably be better =/
 int create_rc(
         int             w       ,
         int             h       ,
@@ -29,6 +30,12 @@ void rc_recol(
         Uint8           r       ,
         Uint8           g       ,
         Uint8           b
+);
+
+void rc_repos(
+        int             rid     ,
+        int             x       ,
+        int             y
 );
 
 void draw_rc(
