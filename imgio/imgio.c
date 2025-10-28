@@ -38,7 +38,10 @@ int read_img(
                         break;
                 } else if (dimf) {
                         px = &(read->dat[p - DAT_BEG]);
-                        sscanf(ln, "%c %c %c", &(px->r), &(px->g), &(px->b));
+                        // hhu is an unsigned char in decimal representation,
+                        // i.e. Uint8
+                        sscanf(ln, "%hhu %hhu %hhu", 
+                                        &(px->r), &(px->g), &(px->b));
                 } else {
                         printf("problem\n");
                 }

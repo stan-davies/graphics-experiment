@@ -67,17 +67,16 @@ int create_tx(
         char           *tx_path
 ) {
         SDL_Rect        bb      = { x, y, w, h };
-        SDL_Texture    *tex     = rend_rq_tex(SDL_PIXELFORMAT_RGB24, 
+        SDL_Texture    *tex     = rend_rq_tex(SDL_PIXELFORMAT_RGB24,
                                         SDL_TEXTUREACCESS_STATIC, bb.w, bb.h);
         
         struct img i;
         read_img(tx_path, &i);
 
         // Should pixels be normalised?
-        SDL_UpdateTexture(tex, NULL, i.dat, 3 * i.w * sizeof(int));
+        SDL_UpdateTexture(tex, NULL, i.dat, 3 * i.w * sizeof(Uint8));
 
         free(i.dat);
-        // can I free the pixels now? (I think so)
 
         // ^ possible errors abound (!?)
 
