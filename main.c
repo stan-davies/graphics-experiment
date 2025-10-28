@@ -3,6 +3,7 @@
 #include "util/util.h"
 #include "rend/rend.h"
 #include "rc_man/rc_man.h"
+#include "subject/subject.h"
 
 int main(
         void
@@ -19,11 +20,10 @@ int main(
         struct col clr = { 255, 90, 120 };
         set_rendcl(clr);
 
-        struct col c = { 30, 45, 240 };
-        int rc_id = create_rc(400, 200, 50, 50, c.r, c.g, c.b);
+        sub_init();
 
         rend_cl();
-        draw_rc(rc_id);
+        sub_draw();
         push_rend();
 
         SDL_Event e;
@@ -35,13 +35,10 @@ int main(
                         }
                         if (SDL_KEYDOWN == e.type) {
                                 if (SDLK_c == e.key.keysym.sym) {
-                                        c.r = (c.g - 50) % 255; 
-                                        c.g = (c.b - 20) % 255;
-                                        c.b = (c.r + 20) % 255;
-                                        rc_recol(rc_id, c.r, c.g, c.b);
+                                        sub_update();
 
                                         rend_cl();
-                                        draw_rc(rc_id);
+                                        sub_draw();
                                         push_rend();
 
                                 } else { 
