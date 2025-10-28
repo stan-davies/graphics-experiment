@@ -1,5 +1,5 @@
-#ifndef RC_MAN
-#define RC_MAN
+#ifndef TX_MAN
+#define TX_MAN
 
 #include "util/util.h"
 
@@ -14,14 +14,12 @@ void dest_tx_man(
         void
 );
 
-// Could probably be better =/
 int create_tx(
         int             w       ,
         int             h       ,
         int             x       ,
         int             y       ,
-        // ^ associated dstrect?
-        // something something pixel data
+        char           *tx_path
 );
 
 // there was a recolour function, not really needed

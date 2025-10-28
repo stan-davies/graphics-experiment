@@ -1,6 +1,8 @@
 #ifndef COL_H
 #define COL_H
 
+#include "util/util.h"
+
 struct col {
         Uint8           r       ;
         Uint8           g       ;

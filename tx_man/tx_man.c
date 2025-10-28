@@ -51,6 +51,8 @@ void dest_tx_man(
                         break;
                 }
 
+                SDL_DestroyTexture(txc->tex);
+
                 txn = txc->next;
                 free(txc);
                 txc = txn;

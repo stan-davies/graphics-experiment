@@ -1,7 +1,10 @@
 #include "imgio.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define DIM_LNN 1
-#define DIM_BEG 3
+#define DAT_BEG 3
 
 int read_img(
         char           *path    , 
@@ -26,7 +29,7 @@ int read_img(
                 ++p;
                 if (DIM_LNN == p) {
                         sscanf(ln, "%d %d", &(read->w), &(read->h));
-                        read->data = calloc(read->w * read->h, 
+                        read->dat = calloc(read->w * read->h, 
                                         sizeof(struct col));
                         dimf = TRUE;
                 } else if (p < DAT_BEG) {
@@ -34,8 +37,8 @@ int read_img(
                 } else if (p - DAT_BEG > read->w * read->h) {
                         break;
                 } else if (dimf) {
-                        px = &(read->data[p - DAT_BEG]);
-                        sscanf(ln, "%d %d %d", &(px->r), &(px->g), &(px->b));
+                        px = &(read->dat[p - DAT_BEG]);
+                        sscanf(ln, "%c %c %c", &(px->r), &(px->g), &(px->b));
                 } else {
                         printf("problem\n");
                 }

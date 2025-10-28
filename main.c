@@ -3,6 +3,7 @@
 #include "util/util.h"
 #include "rend/rend.h"
 #include "rc_man/rc_man.h"
+#include "tx_man/tx_man.h"
 #include "subject/subject.h"
 
 int main(
@@ -17,6 +18,7 @@ int main(
 
         init_rend(win);
         init_rc_man();
+        init_tx_man();
 
         struct col clr = { 255, 90, 120 };
         set_rendcl(clr);
@@ -55,6 +57,7 @@ int main(
         }
 
 // cleanup function
+        dest_tx_man();
         dest_rc_man();
         end_sdl(&win);
         return 0;
