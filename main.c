@@ -22,30 +22,31 @@ int main(
 
         sub_init();
 
-        rend_cl();
-        sub_draw();
-        push_rend();
-
         SDL_Event e;
         int run = TRUE;
         while (run) {
+                rend_cl();
+
                 while (SDL_PollEvent(&e)) {
                         if (SDL_QUIT == e.type) {
                                 run = FALSE;
-                        }
-                        if (SDL_KEYDOWN == e.type) {
-                                if (SDLK_c == e.key.keysym.sym) {
-                                        sub_update();
-
-                                        rend_cl();
-                                        sub_draw();
-                                        push_rend();
-
-                                } else { 
+                        } else if (SDL_KEYDOWN == e.type) {
+                                if (SDLK_x == e.key.keysym.sym) {
                                         run = FALSE;
                                 }
                         }
+
+                        // update function will really only need `e.key`, which
+                        // contains key pressed as well as key up/down,
+                        // pressed/released, etc I have not decided how to deal
+                        // with not looking at data if the event is not a
+                        // keydown, so for know we send everyting and check in
+                        // update function
+                        sub_update(e);
                 }
+
+                sub_draw();
+                push_rend();
         }
 
         dest_rc_man();

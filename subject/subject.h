@@ -1,6 +1,8 @@
 #ifndef SUBJECT_H
 #define SUBJECT_H
 
+#include "util/util.h"
+
 void sub_init(
         void
 );
@@ -8,7 +10,7 @@ void sub_init(
 // destroy
 
 void sub_update(
-        void
+        SDL_Event       e
 );
 
 void sub_draw(

@@ -1,6 +1,5 @@
 #include "subject.h"
 
-#include "util/util.h"
 #include "rc_man/rc_man.h"
 
 #define HOME_X  50
@@ -40,12 +39,30 @@ void sub_init(
 
 // pass in keys pressed and handle internally
 void sub_update(
-        void
+        SDL_Event       e
 ) {
-        sub.c.r = (sub.c.g - 50) % 255; 
-        sub.c.g = (sub.c.b - 20) % 255;
-        sub.c.b = (sub.c.r + 20) % 255;
-        rc_recol(sub.rid, sub.c.r, sub.c.g, sub.c.b);
+        if (e.type != SDL_KEYDOWN) {
+                return;
+        }
+
+        switch (e.key.keysym.sym) {
+        case SDLK_c:
+                sub.c.r = (sub.c.g - 50) % 255; 
+                sub.c.g = (sub.c.b - 20) % 255;
+                sub.c.b = (sub.c.r + 20) % 255;
+                rc_recol(sub.rid, sub.c.r, sub.c.g, sub.c.b);
+                break;
+        case SDLK_w:
+                sub.pos.y -= 10;
+                rc_repos(sub.rid, sub.pos.x, sub.pos.y);
+                break;
+        case SDLK_s:
+                sub.pos.y += 10;
+                rc_repos(sub.rid, sub.pos.x, sub.pos.y);
+                break;
+        default:
+                break;
+        }
 }
 
 void sub_draw(
