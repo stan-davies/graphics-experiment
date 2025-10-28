@@ -2,7 +2,7 @@
 #define UTIL_H
 
 #include "sdl-inc.h"
-#include "col.h"
+#include "imgio/imgio.h"
 
 #define TRUE    1
 #define FALSE   0

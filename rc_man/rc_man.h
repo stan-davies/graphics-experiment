@@ -5,6 +5,7 @@
 
 #define RCERR_DRAW_NF   1
 #define RCERR_RECOL_NF  2
+#define RCERR_REPOS_NF  3
 
 void init_rc_man(
         void

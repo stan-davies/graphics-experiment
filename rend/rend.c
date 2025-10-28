@@ -38,6 +38,33 @@ void rend_cl(
         SDL_RenderClear(rend.r);
 }
 
+SDL_Texture * rend_rq_tex(
+        Uint32          format  ,
+        int             access  ,
+        // Is it time for int2?
+        int             w       ,
+        int             h
+) {
+        if (!rend.I) {
+                return NULL;
+        }
+
+        return SDL_CreateTexture(rend.r, format, access, w, h);
+}
+
+void rend_tex(
+        SDL_Rect       *dst     ,
+        SDL_Texture    *tex
+) {
+        if (!rend.I) {
+                return;
+        }
+
+        // Do I need to do this?
+        SDL_SetRenderDrawColor(rend.r, 255, 255, 255, 255);
+        SDL_RenderCopy(rend.r, tex, NULL, dst);
+}
+
 void rend_rc(
         SDL_Rect        rc      ,
         struct col      c

@@ -8,6 +8,7 @@
 int main(
         void
 ) {
+// init function
         SDL_Window  *win   = NULL;
 
         if (!init_sdl(&win)) {
@@ -22,6 +23,7 @@ int main(
 
         sub_init();
 
+// main loop function
         SDL_Event e;
         int run = TRUE;
         while (run) {
@@ -42,6 +44,9 @@ int main(
                         // with not looking at data if the event is not a
                         // keydown, so for know we send everyting and check in
                         // update function
+                        // could attach a bool with 'keypress' but then that is
+                        // almost just what we are doing anyway
+                        // split only arises for stuff with passive behaviour
                         sub_update(e);
                 }
 
@@ -49,6 +54,7 @@ int main(
                 push_rend();
         }
 
+// cleanup function
         dest_rc_man();
         end_sdl(&win);
         return 0;

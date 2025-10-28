@@ -108,7 +108,7 @@ void rc_repos(
         struct rc *sub = find_rc(rid);
 
         if (!sub) {
-                rc_man.err = RCERR_RECOL_NF;
+                rc_man.err = RCERR_REPOS_NF;
                 printf("bad repos\n");
                 return;
         }
