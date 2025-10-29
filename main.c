@@ -5,6 +5,7 @@
 #include "rc_man/rc_man.h"
 #include "tx_man/tx_man.h"
 #include "subject/subject.h"
+#include "imgio/imgio.h"
 
 int main(
         void
@@ -23,7 +24,10 @@ int main(
         struct col clr = { 255, 90, 120 };
         set_rendcl(clr);
 
-        sub_init();
+        if (!sub_init()) {
+                printf("Could not initialise subject.\n");
+                goto exit;
+        }
 
 // main loop function
         SDL_Event e;
@@ -56,6 +60,7 @@ int main(
                 push_rend();
         }
 
+exit:
 // cleanup function
         dest_tx_man();
         dest_rc_man();

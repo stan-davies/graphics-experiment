@@ -20,14 +20,16 @@ static struct {
         int             tid     ;
 } sub;
 
-void sub_init(
+int sub_init(
         void
 ) {
         sub.pos.x       = HOME_X;
         sub.pos.y       = HOME_Y;
 
-        sub.tid = create_tx(HOME_W, HOME_H, sub.pos.x, sub.pos.y, 
+        sub.tid         = create_tx(HOME_W, HOME_H, sub.pos.x, sub.pos.y, 
                                                         "assets/norm.ppm");
+
+        return -1 != sub.tid;
 }
 
 // destroy - not yet needed

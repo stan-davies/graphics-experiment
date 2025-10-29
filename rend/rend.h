@@ -1,7 +1,7 @@
 #ifndef REND_H
 #define REND_H
 
-#include "util/util.h"
+#include "imgio/imgio.h"
 
 void init_rend(
         SDL_Window     *win

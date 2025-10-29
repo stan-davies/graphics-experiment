@@ -2,20 +2,20 @@
 #define UTIL_H
 
 #include "sdl-inc.h"
-#include "imgio/imgio.h"
 
-#define TRUE    1
-#define FALSE   0
+#define TRUE            1
+#define FALSE           0
+
 #ifndef NULL
-#define NULL    ((void *)0)
+#define NULL            ((void *)0)
 #endif
 
 int init_sdl(
-        SDL_Window **win
+        SDL_Window    **win
 );
 
 void end_sdl(
-        SDL_Window **win
+        SDL_Window    **win
 );
 
 #endif

@@ -3,7 +3,7 @@
 
 #include "util/util.h"
 
-void sub_init(
+int sub_init(
         void
 );
 

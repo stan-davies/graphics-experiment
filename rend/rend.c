@@ -1,5 +1,7 @@
 #include "rend.h"
 
+#include "util/util.h"
+
 static struct {
         int             I       ;
 
@@ -60,8 +62,8 @@ void rend_tex(
                 return;
         }
 
-        // Do I need to do this?
-        SDL_SetRenderDrawColor(rend.r, 255, 255, 255, 255);
+        // Can use SDL_SetTextureColorMod and SDL_SetTextureAlphaMod to get
+        // fancy here.
         SDL_RenderCopy(rend.r, tex, NULL, dst);
 }
 

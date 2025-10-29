@@ -71,7 +71,11 @@ int create_tx(
                                         SDL_TEXTUREACCESS_STATIC, bb.w, bb.h);
         
         struct img i;
-        read_img(tx_path, &i);
+        if (!read_img(tx_path, &i)) {
+                printf("Could not create texture.\n");
+                SDL_DestroyTexture(tex);
+                return -1;
+        }
 
         // Should pixels be normalised?
         SDL_UpdateTexture(tex, NULL, i.dat, 3 * i.w * sizeof(Uint8));
