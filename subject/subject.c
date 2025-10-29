@@ -27,7 +27,7 @@ int sub_init(
         sub.pos.y       = HOME_Y;
 
         sub.tid         = create_tx(HOME_W, HOME_H, sub.pos.x, sub.pos.y, 
-                                                        "assets/norm.ppm");
+                                                        "assets/norm2.ppm");
 
         return -1 != sub.tid;
 }

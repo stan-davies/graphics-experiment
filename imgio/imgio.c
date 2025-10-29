@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define DIM_LNN 1       // Line number where dimensions should be.
 #define DAT_BEG 3       // Line number where pixel data begins.
@@ -51,6 +52,11 @@ int read_img(
                 } else if (dimf) {
                         px = &(read->dat[p - DAT_BEG]);
 
+                        if (0 == strcmp("a \n", ln)) {
+                                px->a = px->r = px->g = px->b = 0;
+                                continue;
+                        }
+
                         n = sscanf(ln, "%d %d %d", &r, &g, &b);
                         // Cast from int to Uint8 force into new limits, so if
                         // they are the same then the original numbers were
@@ -58,6 +64,7 @@ int read_img(
                         px->r = r;
                         px->g = g;
                         px->b = b;
+                        px->a = 255;
 
                         if (3 != n || px->r != r || px->g != g || px->b != b) {
                                 printf("Error: Invalid pixel data.\n");
