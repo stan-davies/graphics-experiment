@@ -5,12 +5,12 @@
 // poll err function
 
 struct tx {
-        int             tid     ;
+        int             tid     ;       // Given to caller.
 
         SDL_Rect        bb      ;       // In screen space. I.e. `dstrect`.
         SDL_Texture    *tex     ;
 
-        struct tx      *next    ;
+        struct tx      *next    ;       // Forms a linked list.
 };
 
 static struct {
@@ -29,7 +29,7 @@ static struct tx * find_tx(
 void init_tx_man(
         void
 ) {
-        struct tx root = {
+        struct tx root  = {
                 .tid    = 0     ,
                 .next   = NULL
         };
@@ -77,13 +77,11 @@ int create_tx(
                 return -1;
         }
 
-        // Should pixels be normalised?
         SDL_UpdateTexture(tex, NULL, i.dat, 3 * i.w * sizeof(Uint8));
 
         free(i.dat);
 
-        // ^ possible errors abound (!?)
-
+        // Must allocate texture otherwise data gets wiped once function ends.
         tx_man.head->next = calloc(1, sizeof(struct tx));
 
         tx_man.head->next->tid    = tx_man.id_n ;

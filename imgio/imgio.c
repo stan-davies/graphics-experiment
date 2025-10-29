@@ -27,6 +27,9 @@ int read_img(
 
         struct col   *px        ;       // Pixel to write to.
         int           p     = -1;       // Pixel index in img.
+        int           n, r, g, b;       // For reading pixel data.
+                                        // - Number of channels read.
+                                        // - Raw data for r/g/b channels.
 
         int           dimf  = FALSE;    // Whether dimensions have been found.
 
@@ -47,18 +50,41 @@ int read_img(
                         break;
                 } else if (dimf) {
                         px = &(read->dat[p - DAT_BEG]);
-                        // `hhu` is an unsigned char in decimal representation,
-                        // i.e. `Uint8`.
-                        sscanf(ln, "%hhu %hhu %hhu", 
-                                        &(px->r), &(px->g), &(px->b));
+
+                        n = sscanf(ln, "%d %d %d", &r, &g, &b);
+                        // Cast from int to Uint8 force into new limits, so if
+                        // they are the same then the original numbers were
+                        // valid.
+                        px->r = r;
+                        px->g = g;
+                        px->b = b;
+
+                        if (3 != n || px->r != r || px->g != g || px->b != b) {
+                                printf("Error: Invalid pixel data.\n");
+
+                                dimf = FALSE;
+                                goto err_f;
+                        }
                 } else {
+err_f:
+                        // Musn't be done pre-allocation.
+                        free(read->dat);
 err:
                         // Dimensions were invalid or tried to read pixel
                         // without knowing dimensions. Either way, `dimf` is
-                        // false. In all other cases, `dimf` is true.
+                        // false. In all other cases, `dimf` is true. However,
+                        // we do just have to set `dimf` to be false if the
+                        // pixel data is invalid.
                         printf("Error: Could not read texture at '%s'.\n", path);
                         goto exit;
                 }
+        }
+
+        // Only run when `dimf` was true. Ensures number of read pixels is
+        // exactly equal to the number of pixels allocated for.
+        if (p - DAT_BEG + 1 != read->w * read->h) {
+                free(read->dat);
+                dimf = FALSE;           // Return error.
         }
 
 exit:

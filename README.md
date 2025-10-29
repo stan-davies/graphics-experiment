@@ -12,3 +12,6 @@ Where to go next:
   only need alpha of 255, in which case no colour, so could replace whole pixel
   with 'a'
 - perhaps also use binary system    = o or some other compression
+
+
+- Sort out loading of textures with bogus values.

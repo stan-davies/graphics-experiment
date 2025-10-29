@@ -34,7 +34,6 @@ int sub_init(
 
 // destroy - not yet needed
 
-// pass in keys pressed and handle internally
 void sub_update(
         SDL_Event       e
 ) {
