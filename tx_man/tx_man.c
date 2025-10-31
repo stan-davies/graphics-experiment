@@ -72,7 +72,7 @@ int create_tx(
         
         struct img i;
         if (!read_img(tx_path, &i)) {
-                printf("Could not create texture.\n");
+                log_err("Could not create texture.");
                 SDL_DestroyTexture(tex);
                 return -1;
         }
@@ -104,7 +104,7 @@ void tx_repos(
 
         if (!sub) {
                 tx_man.err = TXERR_REPOS_NF;
-                printf("bad repos\n");
+                log_err("Failed to reposition texture.");
                 return;
         }
 
@@ -119,7 +119,7 @@ void draw_tx(
 
         if (!sub) {
                 tx_man.err = TXERR_DRAW_NF;
-                printf("bad draw\n");
+                log_err("Failed to draw texture.");
                 return;
         }
 

@@ -11,7 +11,7 @@ static struct {
 } rend = {
         .I      =       FALSE   , 
         .r      =       NULL    ,
-        .clr_col = { 255, 255, 255 }
+        .clr_col = { 255, 255, 255, 255 }
 };
 
 void init_rend(

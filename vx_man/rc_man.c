@@ -67,7 +67,7 @@ int create_rc(
         Uint8           b
 ) {
         SDL_Rect        bb      = { x, y, w, h };
-        struct col      cl      = { r, g, b, 255 };
+        struct col      cl      = { r, g, b };
 
         rc_man.head->next = calloc(1, sizeof(struct rc));
 
@@ -91,7 +91,7 @@ void rc_recol(
 
         if (!sub) {
                 rc_man.err = RCERR_RECOL_NF;
-                log_err("Failed to recolour rectangle.");
+                printf("bad recol\n");
                 return;
         }
 
@@ -109,7 +109,7 @@ void rc_repos(
 
         if (!sub) {
                 rc_man.err = RCERR_REPOS_NF;
-                log_err("Failed to reposition rectangle.");
+                printf("bad repos\n");
                 return;
         }
 
@@ -124,7 +124,7 @@ void draw_rc(
 
         if (!sub) {
                 rc_man.err = RCERR_DRAW_NF;
-                log_err("Failed to draw rectangle.");
+                printf("bad draw\n");
                 return;
         }
 

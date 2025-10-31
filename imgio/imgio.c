@@ -17,6 +17,7 @@ int read_img(
         // path relative to directory instead?
         FILE *f = fopen(path, "r");
         if (!f) {
+                log_err("No such texture '%s'.", path);
                 return FALSE;
         }
 
@@ -67,7 +68,7 @@ int read_img(
                         px->a = 255;
 
                         if (3 != n || px->r != r || px->g != g || px->b != b) {
-                                printf("Error: Invalid pixel data.\n");
+                                log_err("Invalid pixel data.");
 
                                 dimf = FALSE;
                                 goto err_f;
@@ -82,7 +83,7 @@ err:
                         // false. In all other cases, `dimf` is true. However,
                         // we do just have to set `dimf` to be false if the
                         // pixel data is invalid.
-                        printf("Error: Could not read texture at '%s'.\n", path);
+                        log_err("Could not read texture at '%s'.", path);
                         goto exit;
                 }
         }
@@ -90,6 +91,7 @@ err:
         // Only run when `dimf` was true. Ensures number of read pixels is
         // exactly equal to the number of pixels allocated for.
         if (p - DAT_BEG + 1 != read->w * read->h) {
+                log_err("Texture at '%s' incomplete.", path);
                 free(read->dat);
                 dimf = FALSE;           // Return error.
         }

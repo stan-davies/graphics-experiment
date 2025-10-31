@@ -10,24 +10,12 @@
 int main(
         void
 ) {
-// init function
-        SDL_Window  *win   = NULL;
-
-        if (!init_sdl(&win)) {
-                printf("Failed to initalise SDL.\n");
+        if (!init()) {
+                return 0;       // All required cleanup done internally.
         }
 
-        init_rend(win);
-        init_rc_man();
-        init_tx_man();
-
-        struct col clr = { 255, 90, 120 };
+        struct col clr = { 255, 90, 120, 255 };
         set_rendcl(clr);
-
-        if (!sub_init()) {
-                printf("Could not initialise subject.\n");
-                goto exit;
-        }
 
 // main loop function
         SDL_Event e;
@@ -60,10 +48,6 @@ int main(
                 push_rend();
         }
 
-exit:
-// cleanup function
-        dest_tx_man();
-        dest_rc_man();
-        end_sdl(&win);
+        end();
         return 0;
 }
