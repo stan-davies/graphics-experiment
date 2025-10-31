@@ -3,6 +3,7 @@
 
 #include "util/util.h"
 
+#define RCERR_NONE      0
 #define RCERR_DRAW_NF   1
 #define RCERR_RECOL_NF  2
 #define RCERR_REPOS_NF  3

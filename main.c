@@ -2,7 +2,6 @@
 
 #include "util/util.h"
 #include "rend/rend.h"
-#include "rc_man/rc_man.h"
 #include "tx_man/tx_man.h"
 #include "subject/subject.h"
 #include "imgio/imgio.h"
@@ -42,6 +41,11 @@ int main(
                         // almost just what we are doing anyway
                         // split only arises for stuff with passive behaviour
                         sub_update(e);
+                }
+
+                if (TXERR_NONE != tx_man_poll_err()) {
+                        log_err("Problem in texture manager.");
+                        break;
                 }
 
                 sub_draw();

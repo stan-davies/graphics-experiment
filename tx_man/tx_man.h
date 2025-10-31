@@ -3,6 +3,7 @@
 
 #include "util/util.h"
 
+#define TXERR_NONE      0
 #define TXERR_DRAW_NF   1
 #define TXERR_REPOS_NF  2
 
@@ -11,6 +12,10 @@ void init_tx_man(
 );
 
 void dest_tx_man(
+        void
+);
+
+int tx_man_poll_err(
         void
 );
 

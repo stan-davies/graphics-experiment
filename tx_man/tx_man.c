@@ -2,8 +2,6 @@
 
 #include "rend/rend.h"
 
-// poll err function
-
 struct tx {
         int             tid     ;       // Given to caller.
 
@@ -38,6 +36,8 @@ void init_tx_man(
         tx_man.head = &tx_man.root;
 
         tx_man.id_n = 1;
+
+        tx_man.err  = TXERR_NONE;
 }
 
 void dest_tx_man(
@@ -57,6 +57,12 @@ void dest_tx_man(
                 free(txc);
                 txc = txn;
         }
+}
+
+int tx_man_poll_err(
+        void
+) {
+        return tx_man.err;
 }
 
 int create_tx(

@@ -2,8 +2,6 @@
 
 #include "rend/rend.h"
 
-// poll err function
-
 struct rc {
         int             rid     ;
 
@@ -38,6 +36,8 @@ void init_rc_man(
         rc_man.head = &rc_man.root;
 
         rc_man.id_n = 1;
+
+        rc_man.err  = RCERR_NONE;
 }
 
 void dest_rc_man(
@@ -55,6 +55,16 @@ void dest_rc_man(
                 free(rcc);
                 rcc = rcn;
         }
+}
+
+int rc_poll_err(
+        void
+) {
+        if (rc_man.err != RCERR_NONE) {
+                log_err("Problem in rectangle manager.");
+        }
+
+        return rc_man.err;
 }
 
 int create_rc(

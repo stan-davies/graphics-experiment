@@ -1,6 +1,5 @@
 #include "subject.h"
 
-#include "rc_man/rc_man.h"
 #include "tx_man/tx_man.h"
 
 #define HOME_X  50
