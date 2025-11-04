@@ -33,7 +33,7 @@ int main(
 
         struct fence f1 = {
                 { 50, 200 },
-                { 400, 50 }
+                { 590, 200 }
         };
 
         SDL_Color vis = { 0, 255, 0, 255 };
@@ -64,7 +64,7 @@ int main(
 
                 f1.post_2.x--;
                 if (50 == f1.post_2.x) {
-                        f1.post_2.x = 400;
+                        f1.post_2.x = 590;
                 }
 
                 if (visible(f1)) {
