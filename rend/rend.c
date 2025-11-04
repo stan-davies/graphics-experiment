@@ -1,7 +1,6 @@
 #include "rend.h"
 
 #include "util/util.h"
-#include "tx_man/tx_man.h"
 
 static struct {
         int             I       ;
@@ -41,44 +40,44 @@ void rend_cl(
         SDL_RenderClear(rend.r);
 }
 
-SDL_Texture * rend_rq_tex(
-        Uint32          format  ,
-        int             access  ,
-        // Is it time for int2?
-        int             w       ,
-        int             h
-) {
-        if (!rend.I) {
-                return NULL;
-        }
-
-        return SDL_CreateTexture(rend.r, format, access, w, h);
-}
-
-void rend_tex(
-        SDL_Rect       *dst     ,
-        SDL_Texture    *tex
-) {
-        if (!rend.I) {
-                return;
-        }
-
-        // Can use SDL_SetTextureColorMod and SDL_SetTextureAlphaMod to get
-        // fancy here.
-        SDL_RenderCopy(rend.r, tex, NULL, dst);
-}
-
-void rend_rc(
-        SDL_Rect        rc      ,
-        struct col      c
-) {
-        if (!rend.I) {
-                return;
-        }
-
-        SDL_SetRenderDrawColor(rend.r, c.r, c.g, c.b, 255);
-        SDL_RenderFillRect(rend.r, &rc);
-}
+//SDL_Texture * rend_rq_tex(
+//        Uint32          format  ,
+//        int             access  ,
+//        // Is it time for int2?
+//        int             w       ,
+//        int             h
+//) {
+//        if (!rend.I) {
+//                return NULL;
+//        }
+//
+//        return SDL_CreateTexture(rend.r, format, access, w, h);
+//}
+//
+//void rend_tex(
+//        SDL_Rect       *dst     ,
+//        SDL_Texture    *tex
+//) {
+//        if (!rend.I) {
+//                return;
+//        }
+//
+//        // Can use SDL_SetTextureColorMod and SDL_SetTextureAlphaMod to get
+//        // fancy here.
+//        SDL_RenderCopy(rend.r, tex, NULL, dst);
+//}
+//
+//void rend_rc(
+//        SDL_Rect        rc      ,
+//        struct col      c
+//) {
+//        if (!rend.I) {
+//                return;
+//        }
+//
+//        SDL_SetRenderDrawColor(rend.r, c.r, c.g, c.b, 255);
+//        SDL_RenderFillRect(rend.r, &rc);
+//}
 
 void rend_gm(
         SDL_Vertex     *vxs     ,

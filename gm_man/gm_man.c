@@ -38,6 +38,7 @@ void init_gm_man(
 ) {
         struct gm root = {
                 .gid    = 0     ,
+                .vrts   = NULL  ,
                 .next   = NULL
         };
         
@@ -66,6 +67,7 @@ void dest_gm_man(
                 }
 
                 gmn = gmc->next;
+                free(gmc->vrts);
                 free(gmc);
                 gmc = gmn;
         }
@@ -85,12 +87,10 @@ int create_gm(
 ) {
         SDL_Vertex *vrts = calloc(VRTS_N, sizeof(SDL_Vertex));
 
-        for (int i = 0; i < VRTS_N * 2; i += 2) {
-                vrts[i].position.x = vrt_dat[i];
-                vrts[i].position.y = vrt_dat[i + 1];
-                vrts[i].color = col;
-
-                log_msg("(%.1f, %.1f)", vrts[i].position.x, vrts[i].position.y);
+        for (int i = 0; i < VRTS_N; ++i) {
+                vrts[i].position.x = vrt_dat[i * 2];
+                vrts[i].position.y = vrt_dat[i * 2 + 1];
+                vrts[i].color      = col;
         }
 
         gm_man.head->next = calloc(1, sizeof(struct gm));
