@@ -1,6 +1,7 @@
 #include "rend.h"
 
 #include "util/util.h"
+#include "tx_man/tx_man.h"
 
 static struct {
         int             I       ;
@@ -77,6 +78,22 @@ void rend_rc(
 
         SDL_SetRenderDrawColor(rend.r, c.r, c.g, c.b, 255);
         SDL_RenderFillRect(rend.r, &rc);
+}
+
+void rend_gm(
+        SDL_Vertex     *vxs     ,
+        int             vxs_n   ,
+        int            *indices ,
+        int             ind_n
+) {
+        if (!rend.I) {
+                return;
+        }
+
+        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, indices, ind_n) != 0) {
+                log_err("Bungled it.");
+        }
+                
 }
 
 void push_rend(

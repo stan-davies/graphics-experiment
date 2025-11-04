@@ -6,6 +6,7 @@ struct tx {
         int             tid     ;       // Given to caller.
 
         SDL_Rect        bb      ;       // In screen space. I.e. `dstrect`.
+                                        // Should these really be here?
         SDL_Texture    *tex     ;
 
         struct tx      *next    ;       // Forms a linked list.

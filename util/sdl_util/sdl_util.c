@@ -1,9 +1,5 @@
 #include "sdl_util.h"
 
-// init all
-
-// dest all
-
 int init_sdl(
         SDL_Window     **win
 ) {

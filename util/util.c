@@ -2,8 +2,7 @@
 
 #include "sdl_util/sdl_util.h"
 #include "rend/rend.h"
-#include "tx_man/tx_man.h"
-#include "subject/subject.h"
+#include "gm_man/gm_man.h"
 
 static SDL_Window *win;
 
@@ -24,15 +23,7 @@ int init(
 
         init_rend(win);
 
-        init_tx_man();
-
-        if (!sub_init()) {
-                dest_tx_man();
-                end_sdl(&win);
-        
-                log_err("Failed to initialise subject.");
-                return FALSE;
-        }
+        init_gm_man();
 
         log_msg("Successfully initialsed program.");
 
@@ -42,7 +33,7 @@ int init(
 void end(
         void
 ) {
-        dest_tx_man();
+        dest_gm_man();
         end_sdl(&win);
 
         log_msg("Program ended.");

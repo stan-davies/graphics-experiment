@@ -2,9 +2,7 @@
 
 #include "util/util.h"
 #include "rend/rend.h"
-#include "tx_man/tx_man.h"
-#include "subject/subject.h"
-#include "imgio/imgio.h"
+#include "gm_man/gm_man.h"
 
 int main(
         void
@@ -15,6 +13,21 @@ int main(
 
         struct col clr = { 255, 90, 120, 255 };
         set_rendcl(clr);
+
+        float *vrts = calloc(4 * 2, sizeof(int));
+        for (int i = 0; i < 4 * 2; ++i) {
+                int x = i % 2 == 0 ? 
+                                340 + 300 * (i % 4 / 2) : 
+                                400 * (i > 4) + 80 * (1 == i || 7 == i);
+
+                vrts[i] = (float)x;
+        }
+
+        SDL_Color c = { 30, 45, 240, 255 };
+
+        int geo = create_gm(vrts, c);
+        free(vrts);
+        vrts = NULL;
 
 // main loop function
         SDL_Event e;
@@ -30,25 +43,9 @@ int main(
                                         run = FALSE;
                                 }
                         }
-
-                        // update function will really only need `e.key`, which
-                        // contains key pressed as well as key up/down,
-                        // pressed/released, etc I have not decided how to deal
-                        // with not looking at data if the event is not a
-                        // keydown, so for know we send everyting and check in
-                        // update function
-                        // could attach a bool with 'keypress' but then that is
-                        // almost just what we are doing anyway
-                        // split only arises for stuff with passive behaviour
-                        sub_update(e);
                 }
 
-                if (TXERR_NONE != tx_man_poll_err()) {
-                        log_err("Problem in texture manager.");
-                        break;
-                }
-
-                sub_draw();
+                draw_gm(geo);
                 push_rend();
         }
 

@@ -1,5 +1,5 @@
 CMD = gcc
-SRC = main.c util/util.c rend/rend.c subject/subject.c tx_man/tx_man.c imgio/imgio.c util/logw/logw.c util/sdl_util/sdl_util.c
+SRC = main.c util/util.c rend/rend.c util/logw/logw.c util/sdl_util/sdl_util.c gm_man/gm_man.c
 OBJ = $(SRC:.c=.o)
 INC = -I . -I /opt/homebrew/include
 LNK = -L /opt/homebrew/lib -lSDL2

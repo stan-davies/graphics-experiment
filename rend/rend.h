@@ -33,6 +33,13 @@ void rend_rc(
         struct col      c
 );
 
+void rend_gm(
+        SDL_Vertex     *vxs     ,
+        int             vxs_n   ,
+        int            *indices ,
+        int             ind_n
+);
+
 void push_rend(
         void
 );
