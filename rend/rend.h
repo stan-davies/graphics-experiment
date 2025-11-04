@@ -2,6 +2,7 @@
 #define REND_H
 
 #include "imgio/imgio.h"
+#include "util/core.h"
 
 void init_rend(
         SDL_Window     *win
@@ -32,6 +33,12 @@ void rend_cl(
 //        SDL_Rect        rc      ,
 //        struct col      c
 //);
+
+void rend_ln(
+        struct int2     origin  ,
+        struct int2     head    ,
+        SDL_Color       col
+);
 
 void rend_gm(
         SDL_Vertex     *vxs     ,

@@ -79,6 +79,15 @@ void rend_cl(
 //        SDL_RenderFillRect(rend.r, &rc);
 //}
 
+void rend_ln(
+        struct int2     origin  ,
+        struct int2     head    ,
+        SDL_Color       col
+) {
+        SDL_SetRenderDrawColor(rend.r, col.r, col.g, col.b, col.a);
+        SDL_RenderDrawLine(rend.r, origin.x, origin.y, head.x, head.y);
+}
+
 void rend_gm(
         SDL_Vertex     *vxs     ,
         int             vxs_n   ,

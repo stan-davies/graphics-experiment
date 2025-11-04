@@ -3,6 +3,7 @@
 #include "sdl_util/sdl_util.h"
 #include "rend/rend.h"
 #include "gm_man/gm_man.h"
+#include "viewer/viewer.h"
 
 static SDL_Window *win;
 
@@ -24,6 +25,9 @@ int init(
         init_rend(win);
 
         init_gm_man();
+
+        struct int2 vpos = { 320, 240 };
+        init_viewer(vpos, 0.f);
 
         log_msg("Successfully initialsed program.");
 
