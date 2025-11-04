@@ -31,16 +31,18 @@ int main(
 //        free(vrts);
 //        vrts = NULL;
 
-        struct int2 o = { 320, 240 };
-        float lambda = 70.f;
-        float theta = 0.f;
-
-        struct int2 l = { 0, 0 };
-        float pi = 3.141598;
+        struct fence f1 = {
+                { 50, 200 },
+                { 400, 50 }
+        };
 
         SDL_Color vis = { 0, 255, 0, 255 };
         SDL_Color hid = { 255, 0, 0, 255 };
         SDL_Color use;
+
+        struct int2 o = { 320, 240 };
+        struct int2 l = { 320 + 50 * cosf(1.57f), 240 + 50 * sinf(1.57f) };
+        SDL_Color c = { 30, 45, 240, 255 };
 
 // main loop function
         SDL_Event e;
@@ -58,21 +60,20 @@ int main(
                         }
                 }
 
-                l.x = o.x + lambda * cosf(theta);
-                l.y = o.y + lambda * sinf(theta);
+                rend_ln(o, l, c);
 
-                theta += 2.f * pi / 360.f;
-                if (theta == 2.f * pi) {
-                        theta = 0.f;
+                f1.post_2.x--;
+                if (50 == f1.post_2.x) {
+                        f1.post_2.x = 400;
                 }
 
-                if (v_vis(l)) {
+                if (visible(f1)) {
                         use = vis;
                 } else {
                         use = hid;
                 }
 
-                rend_ln(o, l, use);
+                rend_ln(f1.post_1, f1.post_2, use);
                 
 //                draw_gm(geo);
                 push_rend();

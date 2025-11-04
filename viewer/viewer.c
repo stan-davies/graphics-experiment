@@ -18,7 +18,14 @@ static void adj_ang(
         float           delta
 );
 
+static float rel_ang(
+        struct int2     v
+);
 
+static int v_vis(
+        struct int2     vx      ,
+        float          *r_ang
+);
 
 void rotate_view(
         float           offset
@@ -51,7 +58,7 @@ void init_viewer(
         viewer.view = _view;
 }
 
-float rel_ang(
+static float rel_ang(
         struct int2     v
 ) {
         struct int2 l = { v.x - viewer.pos.x, v.y - viewer.pos.y };
@@ -73,29 +80,27 @@ float rel_ang(
         return v_ang;
 }
 
-int v_vis(
-        struct int2     vx
+static int v_vis(
+        struct int2     vx      ,
+        float          *r_ang
 ) {
-        return fabsf(rel_ang(vx)) <= FOV / 2.f;
+        *r_ang = rel_ang(vx);
+        return fabsf(*r_ang) <= FOV / 2.f;
 }
                 
 
-struct fence {
-        struct int2     post_1  ;
-        struct int2     post_2  ;
-};
 
 int visible(
         struct fence    w
         // '-> int2 post1, post2
 ) {
-        float ang_1 = rel_ang(w.post_1);
-        if (fabsf(ang_1) <= FOV / 2) {
+        float ang_1;
+        if (v_vis(w.post_1, &ang_1)) {
                 return TRUE;
         }
 
-        float ang_2 = rel_ang(w.post_2);
-        if (fabsf(ang_2) <= FOV / 2) {
+        float ang_2;
+        if (v_vis(w.post_2, &ang_2)) {
                 return TRUE;
         }
 

@@ -29,6 +29,5 @@ Where to go next:
 
 
 - faux-3D stuff plan:
-        º keep track of player view direction
-        º take each vertex and subtract player position then find angle between
-          this vector and viewer direction
+        º create walls which are the connection between two vertices
+        º check if each can be seen

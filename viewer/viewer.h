@@ -3,17 +3,19 @@
 
 #include "util/core.h"
 
+struct fence {
+        struct int2     post_1  ;
+        struct int2     post_2  ;
+};
+
 void init_viewer(
         struct int2     _pos    ,
         float           _view
 );
 
-float rel_ang(
-        struct int2     v
-);
-
-int v_vis(
-        struct int2     vx
+int visible(
+        struct fence    w
+        // '-> int2 post1, post2
 );
 
 #endif
