@@ -27,7 +27,7 @@ int init(
         init_gm_man();
 
         struct int2 vpos = { 320, 240 };
-        init_viewer(vpos, 0.f);
+        init_viewer(vpos, 1.57f);
 
         log_msg("Successfully initialsed program.");
 

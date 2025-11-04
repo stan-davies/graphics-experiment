@@ -12,7 +12,8 @@ int main(
                 return 0;       // All required cleanup done internally.
         }
 
-        struct col clr = { 255, 90, 120, 255 };
+//        struct col clr = { 255, 90, 120, 255 };
+        struct col clr = { 0, 0, 0, 255 };
         set_rendcl(clr);
 
 //        float *vrts = calloc(4 * 2, sizeof(int));
@@ -60,7 +61,7 @@ int main(
                 l.x = o.x + lambda * cosf(theta);
                 l.y = o.y + lambda * sinf(theta);
 
-                theta += 2.f * pi / 720.f;
+                theta += 2.f * pi / 360.f;
                 if (theta == 2.f * pi) {
                         theta = 0.f;
                 }

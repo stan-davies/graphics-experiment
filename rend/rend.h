@@ -31,7 +31,7 @@ void rend_cl(
 //
 //void rend_rc(
 //        SDL_Rect        rc      ,
-//        struct col      c
+//        SDL_Color       c
 //);
 
 void rend_ln(

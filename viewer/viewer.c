@@ -69,7 +69,8 @@ float rel_ang(
 
         v_ang += add * (l.x < 0);
 
-        return v_ang - viewer.view;
+        adj_ang(&v_ang, viewer.view);        
+        return v_ang;
 }
 
 int v_vis(

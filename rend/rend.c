@@ -17,8 +17,8 @@ static struct {
 void init_rend(
         SDL_Window     *win
 ) {
-        rend.r = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);         
-                                // handle flags in some other way?
+        rend.r = SDL_CreateRenderer(win, -1, 
+                        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
         rend_cl();
         
@@ -69,7 +69,7 @@ void rend_cl(
 //
 //void rend_rc(
 //        SDL_Rect        rc      ,
-//        struct col      c
+//        SDL_Color       c
 //) {
 //        if (!rend.I) {
 //                return;
@@ -84,6 +84,10 @@ void rend_ln(
         struct int2     head    ,
         SDL_Color       col
 ) {
+        if (!rend.I) {
+                return;
+        }
+
         SDL_SetRenderDrawColor(rend.r, col.r, col.g, col.b, col.a);
         SDL_RenderDrawLine(rend.r, origin.x, origin.y, head.x, head.y);
 }
