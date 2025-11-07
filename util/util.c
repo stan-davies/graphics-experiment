@@ -25,8 +25,13 @@ int init(
 
         init_rend(win);
 
+        // Where to define this colour?
+        SDL_Color clr = { 0, 0, 0, 255 };
+        set_rendcl(clr);
+
         init_gm_man();
 
+        // Where to define these things?
         struct int2 vpos = { SCREEN_W / 2, SCREEN_H / 2 };
         init_viewer(vpos, 0.f);
 
@@ -44,5 +49,5 @@ void end(
         dest_gm_man();
         end_sdl(&win);
 
-        log_msg("Program ended.");
+        log_msg("Program ended without error.");
 }

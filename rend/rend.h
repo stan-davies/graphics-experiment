@@ -9,7 +9,7 @@ void init_rend(
 );
 
 void set_rendcl(
-        struct col      c
+        SDL_Color      c
 );
 
 void rend_cl(

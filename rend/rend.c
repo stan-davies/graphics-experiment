@@ -7,7 +7,7 @@ static struct {
 
         SDL_Renderer   *r       ;
 
-        struct col      clr_col ;
+        SDL_Color      clr_col ;
 } rend = {
         .I      =       FALSE   , 
         .r      =       NULL    ,
@@ -26,7 +26,7 @@ void init_rend(
 }
 
 void set_rendcl(
-        struct col      c
+        SDL_Color       c
 ) {
         // note use of Uint8, emphasis on 8, so we needn't ensure range
         rend.clr_col = c;

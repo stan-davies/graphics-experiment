@@ -6,4 +6,9 @@ struct int2 {
         int             y       ;
 };
 
+struct float2 {
+        float           x       ;
+        float           y       ;
+};
+
 #endif

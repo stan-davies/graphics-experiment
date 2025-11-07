@@ -9,6 +9,9 @@
 #define NOT_VIS         -8.f
 #define SIDE_ANG        PI * 3.f / 4.f
 
+#define MIN(a, b) (a < b ? a : b)
+#define MAX(a, b) (a < b ? b : a)
+
 static struct {
         struct int2     pos     ;
 
@@ -20,14 +23,10 @@ static struct {
         
         struct int2     lp_la   ;
         struct int2     rp_la   ;
-
-        struct int2     lop_la  ;
-        struct int2     rop_la  ;
 } viewer;
 
 static SDL_Color bod_col = { 30, 45, 240, 255 };
 static SDL_Color prong_col = { 255, 90, 120, 255 };
-static SDL_Color oprong_col = { 120, 90, 255, 255 };
 
 static void adj_ang(
         float          *theta   ,
@@ -69,12 +68,6 @@ static void set_draw(
 
         viewer.rp_la.x = viewer.pos.x + 500 * cosf(viewer.view - FOV / 2.f);
         viewer.rp_la.y = viewer.pos.y - 500 * sinf(viewer.view - FOV / 2.f);
-
-        viewer.lop_la.x = viewer.pos.x + 500 * cosf(viewer.view + SIDE_ANG);
-        viewer.lop_la.y = viewer.pos.y - 500 * sinf(viewer.view + SIDE_ANG);
-
-        viewer.rop_la.x = viewer.pos.x + 500 * cosf(viewer.view - SIDE_ANG);
-        viewer.rop_la.y = viewer.pos.y - 500 * sinf(viewer.view - SIDE_ANG);
 }
 
 static void adj_ang(
@@ -115,30 +108,59 @@ static float rel_ang(
 
         adj_ang(&v_ang, -viewer.view);
 
-        return fabsf(v_ang);
+        return v_ang;
 }
 
 int visible(
         struct int2     v1      ,
         struct int2     v2
 ) {
-        float ang_1 = rel_ang(v1);
+        float ang_1 = fabsf(rel_ang(v1));
         if (ang_1 <= FOV / 2) {
                 return TRUE;
         }
 
-        float ang_2 = rel_ang(v2);
+        float ang_2 = fabsf(rel_ang(v2));
         if (ang_2 <= FOV / 2) {
                 return TRUE;
         }
 
-        if (ang_1 <= SIDE_ANG && ang_2 <= SIDE_ANG) {
-                return TRUE;
-        }
-        // ^ Will pick up even the most grazing cases but also allows invisible
-        // things to be considered visible.
-
         return FALSE;
+}
+
+void calc_ext(
+        struct int2     v1      ,
+        struct int2     v2      ,
+        float          *lm_e    ,       // Leftmost extent.
+        float          *rm_e    ,       // Rightmost extent.
+        float          *i_e             // Inbetween extent.
+) {
+        float ang1 = rel_ang(v1);
+        float ang2 = rel_ang(v2);
+        float in, out;
+
+        if (0.f == ang1 || 0.f == ang2) {
+                goto opp;
+        } else if (ang1 / ang2 < 0.f) {
+                *lm_e =   MIN(fabsf(MIN(ang1, ang2)), FOV / 2.f);
+                *rm_e = - MIN(fabsf(MAX(ang1, ang2)), FOV / 2.f);
+                *i_e  = *lm_e - *rm_e;
+        } else {
+opp:
+                in  = MIN( MIN( fabsf(ang1), fabsf(ang2) ), FOV / 2.f );
+                out = MIN( MAX( fabsf(ang1), fabsf(ang2) ), FOV / 2.f );
+
+                // Ensure we get it right if either angle is 0.
+                if (ang1 < 0.f || ang2 < 0.f) {
+                        *lm_e = -in;
+                        *rm_e = -out;
+                } else {
+                        *lm_e = out;
+                        *rm_e = in;
+                }
+                
+                *i_e = out - in;
+        }
 }
 
 void draw_viewer(
@@ -149,12 +171,9 @@ void draw_viewer(
 
         rend_ln(viewer.pos, viewer.lp_la, prong_col);
         rend_ln(viewer.pos, viewer.rp_la, prong_col);
-
-        rend_ln(viewer.pos, viewer.lop_la, oprong_col);
-        rend_ln(viewer.pos, viewer.rop_la, oprong_col);
 }
 
-void update_viewer(
+int update_viewer(
         SDL_KeyboardEvent       k
 ) {
         switch (k.keysym.sym) {
@@ -177,8 +196,9 @@ void update_viewer(
                 adj_ang(&viewer.view, PI / 45.f);
                 break;
         default:
-                return;
+                return FALSE;
         }
 
         set_draw();
+        return TRUE;
 }

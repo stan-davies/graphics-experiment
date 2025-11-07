@@ -8,26 +8,27 @@ Where to go next:
     a system that utilises opengl and so we can do a custom fragment shader to 
     sort it all out, but that seems like something of a jump for now
 '-> so plain colours for now, add awesome texturing stuff later with opengl
-'-> so create a doom like system perhaps!? do all the projection stuff myself
-    and calculate which triangles need drawing with that
-- move game loop to own system
-- work out what to do about passing key presses to the subject update function
-                        // update function will really only need `e.key`, which
-                        // contains key pressed as well as key up/down,
-                        // pressed/released, etc I have not decided how to deal
-                        // with not looking at data if the event is not a
-                        // keydown, so for know we send everyting and check in
-                        // update function
-                        // could attach a bool with 'keypress' but then that is
-                        // almost just what we are doing anyway
-                        // split only arises for stuff with passive behaviour
-- take window dimensions into a more malleable form
 
 - perhaps use binary system for ppms    = o or some other compression
-'-> not bothering with texturing for now so don't do that lol!
+'-> not bothering with texturing for now so don't worry about that yet lol!
 
 
 
 - faux-3D stuff plan:
-        º make sure only the right walls are being picked up (?)
+        º try out with more walls
         º make it seems 3D with triangle magic
+        '-> only render the visible extent of walls by picking the nearest wall
+        and having it occupy (perhaps by storing occupied intervals) a certain
+        interval in the field of view, then when drawing farther away walls,
+        culling any part of them in occupied regions. We can also then
+        terminate early if the field of view has been fully occupied.
+
+
+- add a different way of making the world
+'-> allow cursor to move vertices around
+'-> add vertices by clicking on wall
+'-> click anywhere to start drawing a shape, once it contains three vertices,
+they all come alive
+
+
+*collision detetction =(*

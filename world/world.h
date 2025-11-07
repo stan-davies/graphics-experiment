@@ -9,6 +9,10 @@ void dest_world(
         void
 );
 
+void update_world(
+        void
+);
+
 void draw_world(
         void
 );
