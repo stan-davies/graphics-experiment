@@ -9,7 +9,7 @@ int init_sdl(
         }
 
         *win = SDL_CreateWindow("Graphics Experiment", 100, 100, 
-                                        640, 480, SDL_WINDOW_SHOWN);
+                                        SCREEN_W, SCREEN_H, SDL_WINDOW_SHOWN);
         if (!(*win)) {
                 log_err("Failed to create window.");
                 return FALSE;

@@ -29,10 +29,10 @@ void rend_cl(
 //        SDL_Texture    *tex
 //);
 //
-//void rend_rc(
-//        SDL_Rect        rc      ,
-//        SDL_Color       c
-//);
+void rend_rc(
+        SDL_Rect        rc      ,
+        SDL_Color       c
+);
 
 void rend_ln(
         struct int2     origin  ,

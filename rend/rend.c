@@ -67,17 +67,17 @@ void rend_cl(
 //        SDL_RenderCopy(rend.r, tex, NULL, dst);
 //}
 //
-//void rend_rc(
-//        SDL_Rect        rc      ,
-//        SDL_Color       c
-//) {
-//        if (!rend.I) {
-//                return;
-//        }
-//
-//        SDL_SetRenderDrawColor(rend.r, c.r, c.g, c.b, 255);
-//        SDL_RenderFillRect(rend.r, &rc);
-//}
+void rend_rc(
+        SDL_Rect        rc      ,
+        SDL_Color       c
+) {
+        if (!rend.I) {
+                return;
+        }
+
+        SDL_SetRenderDrawColor(rend.r, c.r, c.g, c.b, 255);
+        SDL_RenderFillRect(rend.r, &rc);
+}
 
 void rend_ln(
         struct int2     origin  ,

@@ -4,6 +4,7 @@
 #include "rend/rend.h"
 #include "gm_man/gm_man.h"
 #include "viewer/viewer.h"
+#include "world/world.h"
 
 static SDL_Window *win;
 
@@ -26,8 +27,10 @@ int init(
 
         init_gm_man();
 
-        struct int2 vpos = { 320, 240 };
-        init_viewer(vpos, 1.57f);
+        struct int2 vpos = { SCREEN_W / 2, SCREEN_H / 2 };
+        init_viewer(vpos, 0.f);
+
+        init_world();
 
         log_msg("Successfully initialsed program.");
 
@@ -37,6 +40,7 @@ int init(
 void end(
         void
 ) {
+        dest_world();
         dest_gm_man();
         end_sdl(&win);
 

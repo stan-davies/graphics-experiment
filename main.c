@@ -4,6 +4,7 @@
 #include "rend/rend.h"
 #include "gm_man/gm_man.h"
 #include "viewer/viewer.h"
+#include "world/world.h"
 
 int main(
         void
@@ -31,19 +32,6 @@ int main(
 //        free(vrts);
 //        vrts = NULL;
 
-        struct fence f1 = {
-                { 50, 200 },
-                { 590, 200 }
-        };
-
-        SDL_Color vis = { 0, 255, 0, 255 };
-        SDL_Color hid = { 255, 0, 0, 255 };
-        SDL_Color use;
-
-        struct int2 o = { 320, 240 };
-        struct int2 l = { 320 + 50 * cosf(1.57f), 240 + 50 * sinf(1.57f) };
-        SDL_Color c = { 30, 45, 240, 255 };
-
 // main loop function
         SDL_Event e;
         int run = TRUE;
@@ -54,27 +42,18 @@ int main(
                         if (SDL_QUIT == e.type) {
                                 run = FALSE;
                         } else if (SDL_KEYDOWN == e.type) {
+                                update_viewer(e.key);
+                        
                                 if (SDLK_x == e.key.keysym.sym) {
                                         run = FALSE;
                                 }
                         }
                 }
 
-                rend_ln(o, l, c);
+                draw_viewer();
 
-                f1.post_2.x--;
-                if (50 == f1.post_2.x) {
-                        f1.post_2.x = 590;
-                }
+                draw_world();
 
-                if (visible(f1)) {
-                        use = vis;
-                } else {
-                        use = hid;
-                }
-
-                rend_ln(f1.post_1, f1.post_2, use);
-                
 //                draw_gm(geo);
                 push_rend();
         }

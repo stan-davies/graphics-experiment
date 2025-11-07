@@ -29,5 +29,5 @@ Where to go next:
 
 
 - faux-3D stuff plan:
-        º create walls which are the connection between two vertices
-        º check if each can be seen
+        º make sure only the right walls are being picked up (?)
+        º make it seems 3D with triangle magic
