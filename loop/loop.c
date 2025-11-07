@@ -33,6 +33,14 @@ void loop(
                         if (SDL_KEYUP == e.type) {
                                 k_up(e.key.keysym.sym);
                         }
+
+                        if (SDL_MOUSEBUTTONDOWN == e.type) {
+                                check_mclick(e.button);
+                        }
+
+                        if (SDL_MOUSEMOTION == e.type) {
+                                check_mmove(e.motion);
+                        }
                 }
 
                 if (update_viewer()) {
