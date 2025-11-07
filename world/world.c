@@ -21,10 +21,12 @@ static struct {
 
         struct wall    *walls   ;
 
+        int             v_held  ;
 } world;
 
-static SDL_Color vis_c = { 0, 255, 0, 255 };
-static SDL_Color hid_c = { 255, 0, 0, 255 };
+static SDL_Color vis_c  = { 0, 255, 0, 255 };
+static SDL_Color hid_c  = { 255, 0, 0, 255 };
+static SDL_Color held_c = { 60, 90, 240, 255 };
 
 void init_world(
         void
@@ -32,15 +34,14 @@ void init_world(
         world.verts = calloc(NODE_C, sizeof(struct int2));
         world.walls = calloc(NODE_C, sizeof(struct wall));
 
+        world.v_held = 0;
+
         for (int i = 0; i < NODE_C; ++i) {
                 world.verts[i].x = (0 == i || 3 == i) ? 100 : SCREEN_W - 100;
                 world.verts[i].y = (i >= 2) ? SCREEN_H - 100 : 100;
 
                 world.walls[i].edge.x = i;
                 world.walls[i].edge.y = (i + 1) % 4;
-                
-                world.walls[i].extent.lm = 0;
-                world.walls[i].extent.rm = 0;
         }
 
         update_world();
@@ -61,10 +62,12 @@ void update_world(
 ) {
         for (int i = 0; i < NODE_C; ++i) {
                 if (
-                        0.f == world.walls[i].extent.i
-                     && !vx_in_view(
-                                world.verts[world.walls[i].edge.x],
-                                world.verts[world.walls[i].edge.y]
+                        i == world.v_held || (
+                                0.f == world.walls[i].extent.i
+                             && !vx_in_view(
+                                        world.verts[world.walls[i].edge.x],
+                                        world.verts[world.walls[i].edge.y]
+                                )
                         )
                 ) {
                         continue;
@@ -73,9 +76,9 @@ void update_world(
                 calc_ext(
                         world.verts[world.walls[i].edge.x],
                         world.verts[world.walls[i].edge.y],
-                        &(world.walls[i].extent.lm),
-                        &(world.walls[i].extent.rm),
-                        &(world.walls[i].extent.i)
+                        &world.walls[i].extent.lm,
+                        &world.walls[i].extent.rm,
+                        &world.walls[i].extent.i
                 );
         }
 }
@@ -86,7 +89,15 @@ void draw_world(
         SDL_Color use;
 
         for (int i = 0; i < NODE_C; ++i) {
-                use = world.walls[i].extent.i > 0.f ? vis_c : hid_c;
+                if (world.v_held == world.walls[i].edge.x
+                 || world.v_held == world.walls[i].edge.y) {
+                        use = held_c;
+                } else if (world.walls[i].extent.i > 0.f) {
+                        use = vis_c;
+                } else {
+                        use = hid_c;
+                }
+
                 rend_ln(
                         world.verts[world.walls[i].edge.x],
                         world.verts[world.walls[i].edge.y],

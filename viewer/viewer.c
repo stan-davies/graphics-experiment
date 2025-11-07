@@ -9,6 +9,9 @@
 #define FOV             PI / 2.f
 #define NOT_VIS         -8.f
 
+#define MOVE_BY         5
+#define ROTATE_BY       PI / 50.f
+
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
 
@@ -18,6 +21,7 @@ static struct {
         float           view    ;       // Angle of view offset from (0, 1), in
                                         // (-pi, pi].
 
+// ---  for drawing
         struct int2     lookat  ;
         SDL_Rect        body    ;
         
@@ -115,13 +119,13 @@ int vx_in_view(
         struct int2     v1      ,
         struct int2     v2
 ) {
-        float ang_1 = fabsf(rel_ang(v1));
-        if (ang_1 <= FOV / 2) {
+        float ang1 = fabsf(rel_ang(v1));
+        if (ang1 <= FOV / 2) {
                 return TRUE;
         }
 
-        float ang_2 = fabsf(rel_ang(v2));
-        if (ang_2 <= FOV / 2) {
+        float ang2 = fabsf(rel_ang(v2));
+        if (ang2 <= FOV / 2) {
                 return TRUE;
         }
 
@@ -182,30 +186,30 @@ int update_viewer(
         while (-1 != (k = get_key(i++))) {
                 switch (k) {
                 case SDLK_w:
-                        if (viewer.pos.y > 10) {
-                                viewer.pos.y -= 10;
+                        if (viewer.pos.y > MOVE_BY) {
+                                viewer.pos.y -= MOVE_BY;
                         }
                         break;
                 case SDLK_s:
-                        if (viewer.pos.y < SCREEN_H - 10) {
-                                viewer.pos.y += 10;
+                        if (viewer.pos.y < SCREEN_H - MOVE_BY) {
+                                viewer.pos.y += MOVE_BY;
                         }
                         break;
                 case SDLK_a:
-                        if (viewer.pos.x > 10) {
-                                viewer.pos.x -= 10;
+                        if (viewer.pos.x > MOVE_BY) {
+                                viewer.pos.x -= MOVE_BY;
                         }
                         break;
                 case SDLK_d:
-                        if (viewer.pos.x < SCREEN_W - 10) {
-                                viewer.pos.x += 10;
+                        if (viewer.pos.x < SCREEN_W - MOVE_BY) {
+                                viewer.pos.x += MOVE_BY;
                         }
                         break;
                 case SDLK_e:
-                        adj_ang(&viewer.view, PI / -45.f);
+                        adj_ang(&viewer.view, -ROTATE_BY);
                         break;
                 case SDLK_q:
-                        adj_ang(&viewer.view, PI / 45.f);
+                        adj_ang(&viewer.view, ROTATE_BY);
                         break;
                 default:
                         return FALSE;
