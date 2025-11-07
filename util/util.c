@@ -5,6 +5,7 @@
 #include "gm_man/gm_man.h"
 #include "viewer/viewer.h"
 #include "world/world.h"
+#include "key_man/key_man.h"
 
 static SDL_Window *win;
 
@@ -35,7 +36,10 @@ int init(
         struct int2 vpos = { SCREEN_W / 2, SCREEN_H / 2 };
         init_viewer(vpos, 0.f);
 
+        // Viewer must be initialised before this.
         init_world();
+
+        init_key_man();
 
         log_msg("Successfully initialsed program.");
 
@@ -45,6 +49,7 @@ int init(
 void end(
         void
 ) {
+        dest_key_man();
         dest_world();
         dest_gm_man();
         end_sdl(&win);

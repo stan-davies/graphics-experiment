@@ -3,11 +3,11 @@
 #include <math.h>
 
 #include "rend/rend.h"
+#include "key_man/key_man.h"
 
 #define PI              3.141598f
 #define FOV             PI / 2.f
 #define NOT_VIS         -8.f
-#define SIDE_ANG        PI * 3.f / 4.f
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
@@ -111,7 +111,7 @@ static float rel_ang(
         return v_ang;
 }
 
-int visible(
+int vx_in_view(
         struct int2     v1      ,
         struct int2     v2
 ) {
@@ -174,29 +174,42 @@ void draw_viewer(
 }
 
 int update_viewer(
-        SDL_KeyboardEvent       k
+        void
 ) {
-        switch (k.keysym.sym) {
-        case SDLK_w:
-                viewer.pos.y -= 10;
-                break;
-        case SDLK_s:
-                viewer.pos.y += 10;
-                break;
-        case SDLK_a:
-                viewer.pos.x -= 10;
-                break;
-        case SDLK_d:
-                viewer.pos.x += 10;
-                break;
-        case SDLK_e:
-                adj_ang(&viewer.view, PI / -45.f);
-                break;
-        case SDLK_q:
-                adj_ang(&viewer.view, PI / 45.f);
-                break;
-        default:
-                return FALSE;
+        SDL_Keycode k;
+        int i = 0;
+
+        while (-1 != (k = get_key(i++))) {
+                switch (k) {
+                case SDLK_w:
+                        if (viewer.pos.y > 10) {
+                                viewer.pos.y -= 10;
+                        }
+                        break;
+                case SDLK_s:
+                        if (viewer.pos.y < SCREEN_H - 10) {
+                                viewer.pos.y += 10;
+                        }
+                        break;
+                case SDLK_a:
+                        if (viewer.pos.x > 10) {
+                                viewer.pos.x -= 10;
+                        }
+                        break;
+                case SDLK_d:
+                        if (viewer.pos.x < SCREEN_W - 10) {
+                                viewer.pos.x += 10;
+                        }
+                        break;
+                case SDLK_e:
+                        adj_ang(&viewer.view, PI / -45.f);
+                        break;
+                case SDLK_q:
+                        adj_ang(&viewer.view, PI / 45.f);
+                        break;
+                default:
+                        return FALSE;
+                }
         }
 
         set_draw();

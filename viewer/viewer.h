@@ -8,7 +8,7 @@ void init_viewer(
         float           _view
 );
 
-int visible(
+int vx_in_view(
         struct int2     v1      ,
         struct int2     v2
 );
@@ -27,7 +27,7 @@ void draw_viewer(
 
 // Returns whether the view has changed (i.e. by rotation or relocation).
 int update_viewer(
-        SDL_KeyboardEvent       k
+        void
 );
 
 #endif
