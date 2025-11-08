@@ -22,10 +22,13 @@ Where to go next:
         interval in the field of view, then when drawing farther away walls,
         culling any part of them in occupied regions. We can also then
         terminate early if the field of view has been fully occupied.
+        º checking does seem to work although errors occasionally occur when
+        vertices have been moved then you walk through a wall or something.
+        Presumably this is not something that would ever happen in real
+        rendering but test more.
 
 
 - add a different way of making the world
-'-> allow cursor to move vertices around
 '-> add vertices by clicking on wall
 '-> click anywhere to start drawing a shape, once it contains three vertices,
 they all come alive

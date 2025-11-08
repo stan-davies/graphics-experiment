@@ -154,7 +154,7 @@ opp:
                 in  = MIN( MIN( fabsf(ang1), fabsf(ang2) ), FOV / 2.f );
                 out = MIN( MAX( fabsf(ang1), fabsf(ang2) ), FOV / 2.f );
 
-                // Ensure we get it right if either angle is 0.
+                // Ensure we get it right if either angle is 0. - is this true?
                 if (ang1 < 0.f || ang2 < 0.f) {
                         *lm_e = -in;
                         *rm_e = -out;
@@ -165,6 +165,36 @@ opp:
                 
                 *i_e = out - in;
         }
+}
+
+void calc_dist(
+        struct int2     v1      ,
+        struct int2     v2      ,
+        float           d
+) {
+        float lambda = (float)((v1.x - v2.x) * (v1.x - viewer.pos.x)
+                      + (v1.y - v2.y) * (v1.y - viewer.pos.y))
+                     / (float)((v2.x - v1.x) * (v2.x - v1.x)
+                      + (v2.y - v1.y) * (v2.y - v1.y));
+
+        if (lambda < 0.f) {
+                lambda = 0.f;
+        } else if (lambda > 1.f) {
+                lambda = 1.f;
+        }
+
+        struct int2 to_near_p = {
+                .x = (v1.x + lambda * (v2.x - v1.x)) - viewer.pos.x,
+                .y = (v1.y + lambda * (v2.y - v1.y)) - viewer.pos.y
+        };
+
+        *d = sqrtf(to_near_p.x * to_near_p.x + to_near_p.y * to_near_p.y);
+}
+
+int spans_fov(
+        struct float2   interval
+) {
+        return interval.x == -FOV / 2.f && interval.y == FOV / 2.f;
 }
 
 void draw_viewer(

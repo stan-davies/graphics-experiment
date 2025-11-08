@@ -21,6 +21,16 @@ void calc_ext(
         float          *i_e             // Inbetween extent.
 );
 
+void calc_dist(
+        struct int2     v1      ,
+        struct int2     v2      ,
+        float          *d
+);
+
+int spans_fov(
+        struct float2   interval
+);
+
 void draw_viewer(
         void
 );

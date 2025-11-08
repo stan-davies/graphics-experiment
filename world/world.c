@@ -3,19 +3,27 @@
 #include "viewer/viewer.h"
 #include "rend/rend.h"
 
-#define NODE_C  4
+#define NODE_C          4
 
-#define NO_HELD -1
+#define NO_HELD        -1
+#define HOLD_NEW       -2
+
+#define FAR             1000.f
+#define MAX_INTS        8
 
 #define TO_DEG(a) (a * 180.f / 3.141598f)
 
+#define IN_INTERVAL(ang, interval) (ang > interval.x && ang < interval.y)
+
 struct wall {
         struct int2     edge    ;
-        struct {
-                float   lm      ;
-                float   rm      ;
-                float   i       ;
-        } extent                ;
+
+        struct float2   extent  ;       // x = left most, y = right most, both
+                                        // in radians relative to viewer,
+                                        // bounded by FOV
+        float           ext_i   ;       // Interval of extent.
+
+        float           dist    ;
 };
 
 static struct {
@@ -30,6 +38,11 @@ static SDL_Color vis_c  = { 0, 255, 0, 255 };
 static SDL_Color hid_c  = { 255, 0, 0, 255 };
 static SDL_Color held_c = { 60, 90, 240, 255 };
 static SDL_Color drop_c = { 255, 255, 255, 255 };
+
+static int find_near_w(
+        float           nr_than ,
+        float           fr_than
+);
 
 void init_world(
         void
@@ -66,7 +79,7 @@ void update_world(
         for (int i = 0; i < NODE_C; ++i) {
                 if (
                         i == world.v_held || (
-                                0.f == world.walls[i].extent.i
+                                0.f == world.walls[i].ext_i
                              && !vx_in_view(
                                         world.verts[world.walls[i].edge.x],
                                         world.verts[world.walls[i].edge.y]
@@ -79,9 +92,15 @@ void update_world(
                 calc_ext(
                         world.verts[world.walls[i].edge.x],
                         world.verts[world.walls[i].edge.y],
-                        &world.walls[i].extent.lm,
-                        &world.walls[i].extent.rm,
-                        &world.walls[i].extent.i
+                        &world.walls[i].extent.x,
+                        &world.walls[i].extent.y,
+                        &world.walls[i].ext_i
+                );
+
+                calc_dist(
+                        world.verts[world.walls[i].edge.x],
+                        world.verts[world.walls[i].edge.y],
+                        &world.walls[i].dist
                 );
         }
 }
@@ -89,8 +108,14 @@ void update_world(
 void check_mclick(
         SDL_MouseButtonEvent    m
 ) {
-        if (NO_HELD != world.v_held) {
+        if (HOLD_NEW == world.v_held) {
+                // check if clicked on an old vertex, if so use that
+                // otherwise create new vertex
+                // link to previous
+                // remain in 'HOLD_NEW'
+        } else if (NO_HELD != world.v_held) {
                 world.v_held = NO_HELD;
+                update_world();
                 return;
         }
 
@@ -103,12 +128,15 @@ void check_mclick(
                         return;
                 }
         }
+
+        // create new vertex
+        world.v_held = HOLD_NEW;
 }
 
 void check_mmove(
         SDL_MouseMotionEvent    m
 ) {
-        if (NO_HELD == world.v_held) {
+        if (NO_HELD == world.v_held || HOLD_NEW == world.v_held) {
                 return;
         }
 
@@ -125,7 +153,7 @@ void draw_world(
                 if (world.v_held == world.walls[i].edge.x
                  || world.v_held == world.walls[i].edge.y) {
                         use = held_c;
-                } else if (world.walls[i].extent.i > 0.f) {
+                } else if (world.walls[i].ext_i > 0.f) {
                         use = vis_c;
                 } else {
                         use = hid_c;
@@ -137,16 +165,128 @@ void draw_world(
                         use
                 );
         }
+}
 
-        SDL_Rect  v1_rc;
+void draw_world_3d(
+        void
+) {
+        // Make own function or something?
+        // Would probably need multiple =(
+        struct float2 *occ_int = calloc(MAX_INTS, sizeof(struct float2));
+        int ints = 0;
 
-        v1_rc.w = 10;
-        v1_rc.h = 10;
+        float nr = 0.f;
+        float fr = FAR;
 
-        for (int i = 0; i < NODE_C; ++i) {
-                v1_rc.x = world.verts[world.walls[i].edge.x].x - 5;
-                v1_rc.y = world.verts[world.walls[i].edge.x].y - 5;
+        int nr_i;
+        struct float2 occ;
+        int cov;
 
-                rend_rc(v1_rc, drop_c);
+        while (!spans_fov(occ_int[0])) {
+                nr_i = find_nr_w(fr, nr);
+                occ = world.walls[nr_i].extent;
+                cov = FALSE;
+
+                for (int = 0; i < ints; ++i) {
+                        // Left most angle hidden, start from right of nearer
+                        // wall.
+                        if (IN_INTERVAL(occ.x, occ_int[i])) {
+                                occ.x = occ_int[i].y;
+                                cov = TRUE;
+
+                                if (!IN_INTERVAL(occ.y, occ_int[i])) {
+                                        occ_int[i].y = occ.y;
+                                }
+                                // So long as right most angle is visible,
+                                // extend this interval to that angle, but
+                                // when?
+                        }
+
+                        // Right most angle hidden, start from left of nearer
+                        // wall.
+                        if (IN_INTERVAL(occ.y, occ_int[i])) {
+                                occ.y = occ_int[i].x;
+                                cov = TRUE;
+
+                                if (!IN_INTERVAL(occ.x, occ_int[i])) {
+                                        occ_int[i].x = occ.y;
+                                }
+                                // So long as left most angle is visible,
+                                // extend this interval to that angle, but
+                                // when?
+                        }
+                }
+
+                // 0 span or left most angle has moved to right of right most
+                // angle.
+                if (occ.x == occ.y || occ.x > occ.y) {
+                        // Totally hidden!
+                        continue;
+                }
+
+                if (MAX_INTS == ints) {
+                        log_err("Too few intervals.");
+                        break;
+                }
+
+                if (!cov) {
+                        occ_int[ints++] = occ;
+                }
+
+                // Draw wall within this interval - do in 2D for now as reference.
+                // 1. Find the coordinates of the visible ends of the wall.
+                // 2. Draw line between them.
+                // 3D:
+                //  2. Find distance to each point.
+                //  3. Use some kind of fancy linear function to map distance
+                //  to point onto wall height.
+                //  4. Create a floor and ceiling vertex for each point.
+                //  5. Draw up some triangles inbetween.
+
+                // Will we use gm man? Seems kind of silly to use a linked list
+                // given we will just destroy this data and create it all anew
+                // for the next frame =/
+                // Speaking of, is that really the way to go? I guess it is
+                // actually not that complex on the calculations, so yes...
+
+                // Check through intervals, if any overlap, merge into one.
+                for (int i = 0; i < ints; ++i) {
+                        for (j = 0; j < ints; ++j) {
+                                if (i == j) {
+                                        continue;
+                                }
+
+                                if (IN_INTERVAL(occ_ints[i].x, occ_ints[j])) {
+                                        occ_ints[i].x = occ_ints[j].x
+                                        occ_ints[i].y = MAX(occ_ints[i].y, occ_ints[j].y);
+
+                                        occ_ints[j] = occ_ints[--ints];
+                                }
+
+                                if (IN_INTERVAL(occ_ints[i].y, occ_ints[j])) {
+                                        occ_ints[i].y = occ_ints[j].y;
+                                        occ_ints[i].x = MIN(occ_ints[i].x, occ_ints[j].x);
+
+                                        occ_ints[j] = occ_ints[--ints];
+                                }
+                        }
+                }
         }
 }
+
+static int find_near_w(
+        float           nr_than ,
+        float           fr_than
+) {
+        int nearest;
+        float d;
+        for (int i = 0; i < NODE_C; ++i) {
+                d = world.walls[i].dist;
+                if (d < nr_than && d > fr_than) {
+                        nearest = i;
+                        dst = d;
+                }
+        }
+
+        return nearest;
+}        
