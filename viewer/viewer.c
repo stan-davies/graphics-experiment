@@ -10,7 +10,7 @@
 #define NOT_VIS         -8.f
 
 #define MOVE_BY         5
-#define ROTATE_BY       PI / 50.f
+#define ROTATE_BY       PI / 90.f
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
@@ -61,8 +61,8 @@ void init_viewer(
 static void set_draw(
         void
 ) {
-        viewer.lookat.x = viewer.pos.x + 50 * cosf(viewer.view);
-        viewer.lookat.y = viewer.pos.y - 50 * sinf(viewer.view);
+        viewer.lookat.x = viewer.pos.x + 500 * cosf(viewer.view);
+        viewer.lookat.y = viewer.pos.y - 500 * sinf(viewer.view);
 
         viewer.body.x = viewer.pos.x - 5;
         viewer.body.y = viewer.pos.y - 5;
@@ -135,42 +135,42 @@ int vx_in_view(
 void calc_ext(
         struct int2     v1      ,
         struct int2     v2      ,
-        float          *lm_e    ,       // Leftmost extent.
-        float          *rm_e    ,       // Rightmost extent.
+        struct float2  *extent  ,       // Left/right most extent.
+        struct float2  *angs    ,       // Actual angles.
         float          *i_e             // Inbetween extent.
 ) {
-        float ang1 = rel_ang(v1);
-        float ang2 = rel_ang(v2);
+        // I think something is wrong here.
+
+        angs->x = rel_ang(v1);
+        angs->y = rel_ang(v2);
         float in, out;
 
-        if (0.f == ang1 || 0.f == ang2) {
-                goto opp;
-        } else if (ang1 / ang2 < 0.f) {
-                *lm_e =   MIN(fabsf(MIN(ang1, ang2)), FOV / 2.f);
-                *rm_e = - MIN(fabsf(MAX(ang1, ang2)), FOV / 2.f);
-                *i_e  = *lm_e - *rm_e;
+// kind of all the same?
+        if (0.f == angs->x || 0.f == angs->y) {
+                goto same;
+        } else if (angs->x / angs->y < 0.f) {
+                extent->x = - MIN(fabsf(MIN(angs->x, angs->y)), FOV / 2.f);
+                extent->y =   MIN(fabsf(MAX(angs->x, angs->y)), FOV / 2.f);
         } else {
-opp:
-                in  = MIN( MIN( fabsf(ang1), fabsf(ang2) ), FOV / 2.f );
-                out = MIN( MAX( fabsf(ang1), fabsf(ang2) ), FOV / 2.f );
+same:
+                in  = MIN( MIN( fabsf(angs->x), fabsf(angs->y) ), FOV / 2.f );
+                out = MIN( MAX( fabsf(angs->x), fabsf(angs->y) ), FOV / 2.f );
 
-                // Ensure we get it right if either angle is 0. - is this true?
-                if (ang1 < 0.f || ang2 < 0.f) {
-                        *lm_e = -in;
-                        *rm_e = -out;
+                if (angs->x < 0.f || angs->y < 0.f) {
+                        extent->x = -out;
+                        extent->y = -in;
                 } else {
-                        *lm_e = out;
-                        *rm_e = in;
+                        extent->x = in;
+                        extent->y = out;
                 }
-                
-                *i_e = out - in;
         }
+
+        *i_e = MAX(extent->x, extent->y) - MIN(extent->x, extent->y);
 }
 
-void calc_dist(
+float calc_nrst(
         struct int2     v1      ,
-        struct int2     v2      ,
-        float           d
+        struct int2     v2
 ) {
         float lambda = (float)((v1.x - v2.x) * (v1.x - viewer.pos.x)
                       + (v1.y - v2.y) * (v1.y - viewer.pos.y))
@@ -188,7 +188,18 @@ void calc_dist(
                 .y = (v1.y + lambda * (v2.y - v1.y)) - viewer.pos.y
         };
 
-        *d = sqrtf(to_near_p.x * to_near_p.x + to_near_p.y * to_near_p.y);
+        return sqrtf(to_near_p.x * to_near_p.x + to_near_p.y * to_near_p.y);
+}
+
+float calc_dist(
+        struct int2     v
+) {
+        struct int2 dif = {
+                .x = v.x - viewer.pos.x,
+                .y = v.y - viewer.pos.y
+        };
+
+        return sqrt(dif.x * dif.x + dif.y + dif.y);
 }
 
 int spans_fov(

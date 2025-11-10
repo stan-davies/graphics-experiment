@@ -16,15 +16,18 @@ int vx_in_view(
 void calc_ext(
         struct int2     v1      ,
         struct int2     v2      ,
-        float          *lm_e    ,       // Leftmost extent.
-        float          *rm_e    ,       // Rightmost extent.
+        struct float2  *extent  ,       // Left/right most extent.
+        struct float2  *angs    ,       // Actual angles.
         float          *i_e             // Inbetween extent.
 );
 
-void calc_dist(
+float calc_nrst(
         struct int2     v1      ,
-        struct int2     v2      ,
-        float          *d
+        struct int2     v2
+);
+
+float calc_dist(
+        struct int2     v
 );
 
 int spans_fov(
