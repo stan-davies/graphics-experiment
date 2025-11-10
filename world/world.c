@@ -371,5 +371,32 @@ static struct float2 interp_angs(
                 .y = (world.walls[w].extent.y - angs.x) / (angs.y - angs.x)
         };
 
+//// Something majorly amiss in here.
+//        struct float2 line = {
+//                .x = world.verts[world.walls[w].edge.y].x - world.verts[world.walls[w].edge.x].x,
+//                .y = world.verts[world.walls[w].edge.y].y - world.verts[world.walls[w].edge.x].y
+//        };
+//        float tot_w = sqrtf(line.x * line.x + line.y * line.y);
+//
+//        float d_l = calc_dist(world.verts[world.walls[w].edge.x]);
+//        float d_r = calc_dist(world.verts[world.walls[w].edge.y]);
+//
+//        float ex     = world.walls[w].ext_i;
+//        float sin_ie = sinf(PI - ex);
+//        float cos_ie = cosf(PI - ex);
+//        float thet_l = atanf( sin_ie / (d_l - d_r * cos_ie) ); 
+//        float thet_r = atanf( sin_ie / (d_r - d_l * cos_ie) ); 
+//
+//        float dif_l  = MAX(world.walls[w].extent.x, angs.x) - MIN(world.walls[w].extent.x, angs.x);
+//        float dif_r  = MAX(world.walls[w].extent.y, angs.y) - MIN(world.walls[w].extent.y, angs.y);
+//
+//        float w_l = d_l * sinf(dif_l) / sinf(PI - ex - thet_l);
+//        float w_r = d_r * sinf(dif_r) / sinf(PI - ex - thet_r);
+//
+//        struct float2 lambdas = {
+//                .x = w_l / tot_w,
+//                .y = w_r / tot_w
+//        };
+
         return lambdas;
 }
