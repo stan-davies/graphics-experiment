@@ -3,7 +3,7 @@
 #include "viewer/viewer.h"
 #include "rend/rend.h"
 
-#define NODE_C          4
+#define NODE_C          8
 
 #define NO_HELD        -1
 #define HOLD_NEW       -2
@@ -63,12 +63,22 @@ void init_world(
 
         world.v_held = NO_HELD;
 
-        for (int i = 0; i < NODE_C; ++i) {
+        for (int i = 0; i < NODE_C / 2; ++i) {
                 world.verts[i].x = (0 == i || 3 == i) ? 100 : SCREEN_W - 100;
                 world.verts[i].y = (i >= 2) ? SCREEN_H - 100 : 100;
 
                 world.walls[i].edge.x = i;
                 world.walls[i].edge.y = (i + 1) % 4;
+        }
+
+        int ofi;
+        for (int i = NODE_C / 2; i < NODE_C; ++i) {
+                ofi = i % (NODE_C / 2);
+                world.verts[i].x = (0 == ofi || 3 == ofi) ? 400 : 500;
+                world.verts[i].y = (ofi >= 2) ? 300 : 200;
+
+                world.walls[i].edge.x = ofi + 4;
+                world.walls[i].edge.y = (ofi + 1) % 4 + 4;
         }
 
         update_world();
@@ -163,8 +173,8 @@ void draw_world(
                 if (world.v_held == world.walls[i].edge.x
                  || world.v_held == world.walls[i].edge.y) {
                         use = held_c;
-//                } else if (world.walls[i].ext_i > 0.f) {
-//                        use = vis_c;
+                } else if (world.walls[i].ext_i > 0.f) {
+                        use = drop_c;
                 } else {
                         use = hid_c;
                 }
@@ -387,11 +397,12 @@ static struct float2 interp_angs(
 //        float thet_l = atanf( sin_ie / (d_l - d_r * cos_ie) ); 
 //        float thet_r = atanf( sin_ie / (d_r - d_l * cos_ie) ); 
 //
-//        float dif_l  = MAX(world.walls[w].extent.x, angs.x) - MIN(world.walls[w].extent.x, angs.x);
-//        float dif_r  = MAX(world.walls[w].extent.y, angs.y) - MIN(world.walls[w].extent.y, angs.y);
+//        struct float2 exts = world.walls[w].extent;
+//        float dif_l  = MAX(exts.x, angs.x) - MIN(exts.x, angs.x);
+//        float dif_r  = MAX(exts.y, angs.y) - MIN(exts.y, angs.y);
 //
-//        float w_l = d_l * sinf(dif_l) / sinf(PI - ex - thet_l);
-//        float w_r = d_r * sinf(dif_r) / sinf(PI - ex - thet_r);
+//        float w_l = d_l * sinf(dif_l) / sinf(PI - exts.x - thet_l);
+//        float w_r = d_r * sinf(dif_r) / sinf(PI - exts.y - thet_r);
 //
 //        struct float2 lambdas = {
 //                .x = w_l / tot_w,
