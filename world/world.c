@@ -102,7 +102,7 @@ void update_world(
         for (int i = 0; i < NODE_C; ++i) {
                 if (
                         i == world.v_held || (
-                                0.f == world.walls[i].ext_i
+                                0.f >= world.walls[i].ext_i
                              && !vx_in_view(
                                         world.verts[world.walls[i].edge.x],
                                         world.verts[world.walls[i].edge.y]
@@ -203,7 +203,6 @@ void draw_world_3d(
 //        struct float2 occ;
 //        int cov;
 
-        // Have not yet devised a better way to do this =(
         for (int i = 0; i < NODE_C; ++i) {
                 world.walls[i].drawn = FALSE;
         }
@@ -214,6 +213,9 @@ void draw_world_3d(
                 interp_angs(nr_i, &p_l, &p_r);
 
                 rend_ln(p_l, p_r, vis_c);
+
+                world.walls[nr_i].drawn = TRUE;
+        }
 
 // All this interval stuff that I am unclear if I will need.
 //                occ = world.walls[nr_i].extent;
@@ -327,7 +329,7 @@ void draw_world_3d(
 //                                }
 //                        }
 //                }
-        }
+//        }
 }
 
 static int find_nr_w(
@@ -337,20 +339,22 @@ static int find_nr_w(
         float nr_than = FAR;
         float d;
         for (int i = 0; i < NODE_C; ++i) {
-                if (0 == world.walls[i].ext_i || world.walls[i].drawn) {
+                if (0 >= world.walls[i].ext_i || world.walls[i].drawn) {
                         continue;
                 }
 
                 d = world.walls[i].dist;
-                if (d < nr_than && d >= *fr_than) {
+
+                int con_1 = (d < nr_than);
+                int con_2 = (d >= *fr_than);
+                
+                if (con_1 && con_2) {
                         nearest = i;
                         nr_than = d;
                 }
         }
 
-        *fr_than = d;
-        // Is this the place to do this?
-        world.walls[nearest].drawn = TRUE;
+        *fr_than = nr_than;
         return nearest;
 }        
 
@@ -359,70 +363,86 @@ static void interp_angs(
         struct int2    *l_V     ,
         struct int2    *r_V
 ) {
-//        struct float2 angs = world.walls[w].angs;
-//
-//// Linear interpolation is not quite right =/
-//        struct float2 lambdas = {
-//                .x = (world.walls[w].extent.x - angs.x) / (angs.y - angs.x),
-//                .y = (world.walls[w].extent.y - angs.x) / (angs.y - angs.x)
-//        };
 
-// Does not seem to work in the slightest =(
+/*
+        struct float2 angs = world.walls[w].angs;
+        
+        struct float2 lambdas = {
+                .x = (world.walls[w].extent.x - angs.x) / (angs.y - angs.x),
+                .y = (world.walls[w].extent.y - angs.x) / (angs.y - angs.x)
+        };
+
+        struct int2 v1 = world.verts[world.walls[w].edge.x];
+        struct int2 v2 = world.verts[world.walls[w].edge.y];
+
+        l_V->x = v1.x + lambdas.x * (v2.x - v1.x);
+        l_V->y = v1.y + lambdas.x * (v2.y - v1.y);
+
+        r_V->x = v1.x + lambdas.y * (v2.x - v1.x);
+        r_V->y = v1.y + lambdas.y * (v2.y - v1.y);
+
+
+*/
+
+// --- 
+
 
         struct float2 angs = {
                 .x = MIN(world.walls[w].angs.x, world.walls[w].angs.y),
                 .y = MAX(world.walls[w].angs.x, world.walls[w].angs.y)
         };
 
-
-        #define RADIUS  100
+        // Larger radius seems to give more accurate results. Presumably just
+        // floating point error (?).
+        float radius = 100;
+        float rad_sq = radius * radius;
 
 // Stricly left and right, unlike v1, v2 by default.
-        // This isn't giving what is expected.
-        struct int2 p1 = rel_p(RADIUS, angs.x);
-        struct int2 p2 = rel_p(RADIUS, angs.y);
-//        float ch_w = sqrtf((p2.x - p1.x) * (p2.x - p1.x) +
-//                                        (p2.y - p1.y) * (p2.y - p1.y));
+        struct int2 p1 = rel_p(radius, angs.x);
+        struct int2 p2 = rel_p(radius, angs.y);
+        float ch_w = sqrtf((p2.x - p1.x) * (p2.x - p1.x) +
+                                        (p2.y - p1.y) * (p2.y - p1.y));
 
-        l_V->x = p1.x;
-        l_V->y = p1.y;
+        // Some freeing error somewhere -> to do with rendering so most likely
+        // trying to render invalid stuff. Hasn't happened since I improved
+        // below stuff.
 
-        r_V->x = p2.x;
-        r_V->y = p2.y;
+        // Some lines are being drawn when they shouldn't - something to do
+        // with calculating extent? Seems to happen when particularly close to
+        // a wall and sending it out of view.
 
-//        struct float2 exts = world.walls[w].extent;
-//        // Chord lambda left / right.
-//        float cll = sqrtf(2.f * RADIUS * RADIUS * (1.f - cosf(exts.x - angs.x))) / ch_w;
-//        float clr = sqrtf(2.f * RADIUS * RADIUS * (1.f - cosf(exts.y - angs.y))) / ch_w;
-//
-//        struct float2 lp_onc = {
-//                .x = p1.x + cll * (p2.x - p1.x),
-//                .y = p1.y + cll * (p2.y - p1.y)
-//        };
-//
-//        l_V->x = lp_onc.x;
-//        l_V->y = lp_onc.y;
-//
-//        struct float2 rp_onc = {
-//                .x = p1.x + clr * (p2.x - p1.x),
-//                .y = p1.y + clr * (p2.y - p1.y)
-//        };
-//
-//        r_V->x = rp_onc.x;
-//        r_V->y = rp_onc.y;
+        struct float2 exts = world.walls[w].extent;
+        // Chord lambda left / right.
+        // Check these angles are definitely correct. - some kind of problem in
+        // them, I am sure.
+        float cll = sqrtf(2.f * rad_sq * (1.f - cosf(exts.x - angs.x))) / ch_w;
+        float clr = sqrtf(2.f * rad_sq * (1.f - cosf(exts.y - angs.x))) / ch_w;
 
-//        struct int2 v1, v2;
-//        if (angs.x == world.walls[w].angs.x) {
-//                v1 = world.verts[world.walls[w].edge.x];
-//                v2 = world.verts[world.walls[w].edge.y];
-//        } else {
-//                v2 = world.verts[world.walls[w].edge.x];
-//                v1 = world.verts[world.walls[w].edge.y];
-//        }
-//
-//        l_V->x = (lp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
-//        l_V->y = (lp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
-//
-//        r_V->x = (rp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
-//        r_V->y = (rp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
+        struct float2 lp_onc = {
+                .x = p1.x + cll * (p2.x - p1.x),
+                .y = p1.y + cll * (p2.y - p1.y)
+        };
+
+        struct float2 rp_onc = {
+                .x = p1.x + clr * (p2.x - p1.x),
+                .y = p1.y + clr * (p2.y - p1.y)
+        };
+
+// Some sign error? - don't think so.
+        struct int2 v1, v2;
+        if (angs.x == world.walls[w].angs.x) {
+                v1 = world.verts[world.walls[w].edge.x];
+                v2 = world.verts[world.walls[w].edge.y];
+        } else {
+                v2 = world.verts[world.walls[w].edge.x];
+                v1 = world.verts[world.walls[w].edge.y];
+        }
+
+// Sometimes right wall gets x=0. - problem with this (doesn't happen in lin.
+// interp.)
+        l_V->x = (lp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
+        l_V->y = (lp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
+
+        r_V->x = (rp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
+        r_V->y = (rp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
 }

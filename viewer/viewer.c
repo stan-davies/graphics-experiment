@@ -10,7 +10,7 @@
 #define NOT_VIS         -8.f
 
 #define MOVE_BY         5
-#define ROTATE_BY       PI / 90.f
+#define ROTATE_BY       PI / 135.f
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
@@ -156,7 +156,7 @@ void calc_ext(
         // Corresponds to vertices.
         angs->x = rel_ang(v1);
         angs->y = rel_ang(v2);
-        // Positioned.
+        // Strict left and right.
         float angl = MIN(angs->x, angs->y);
         float angr = MAX(angs->x, angs->y);
 
