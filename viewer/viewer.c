@@ -58,6 +58,20 @@ void init_viewer(
         viewer.body.h = 10;
 }
 
+struct int2 rel_p(
+        float           r       ,
+        float           t
+) {
+        t = viewer.view - t;
+
+        struct int2 p = {
+                .x = viewer.pos.x + r * cosf(t),
+                .y = viewer.pos.y - r * sinf(t)
+        };
+
+        return p;
+}
+
 static void set_draw(
         void
 ) {
@@ -139,24 +153,27 @@ void calc_ext(
         struct float2  *angs    ,       // Actual angles.
         float          *i_e             // Inbetween extent.
 ) {
-        // I think something is wrong here.
-
+        // Corresponds to vertices.
         angs->x = rel_ang(v1);
         angs->y = rel_ang(v2);
+        // Positioned.
+        float angl = MIN(angs->x, angs->y);
+        float angr = MAX(angs->x, angs->y);
+
         float in, out;
 
 // kind of all the same?
-        if (0.f == angs->x || 0.f == angs->y) {
+        if (0.f == angl || 0.f == angr) {
                 goto same;
-        } else if (angs->x / angs->y < 0.f) {
-                extent->x = - MIN(fabsf(MIN(angs->x, angs->y)), FOV / 2.f);
-                extent->y =   MIN(fabsf(MAX(angs->x, angs->y)), FOV / 2.f);
+        } else if (angl / angr < 0.f) {
+                extent->x = - MIN(fabsf(angl), FOV / 2.f);
+                extent->y =   MIN(fabsf(angr), FOV / 2.f);
         } else {
 same:
-                in  = MIN( MIN( fabsf(angs->x), fabsf(angs->y) ), FOV / 2.f );
-                out = MIN( MAX( fabsf(angs->x), fabsf(angs->y) ), FOV / 2.f );
+                in  = MIN( fabsf(angl), FOV / 2.f );
+                out = MIN( fabsf(angr), FOV / 2.f );
 
-                if (angs->x < 0.f || angs->y < 0.f) {
+                if (angl < 0.f || angr < 0.f) {
                         extent->x = -out;
                         extent->y = -in;
                 } else {

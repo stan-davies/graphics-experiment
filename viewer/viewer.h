@@ -8,6 +8,11 @@ void init_viewer(
         float           _view
 );
 
+struct int2 rel_p(
+        float           r       ,
+        float           t
+);
+
 int vx_in_view(
         struct int2     v1      ,
         struct int2     v2

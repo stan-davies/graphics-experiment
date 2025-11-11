@@ -45,14 +45,16 @@ static struct {
 static SDL_Color vis_c  = { 0, 255, 0, 255 };
 static SDL_Color hid_c  = { 255, 0, 0, 255 };
 static SDL_Color held_c = { 60, 90, 240, 255 };
-static SDL_Color drop_c = { 255, 255, 255, 255 };
+static SDL_Color drop_c = { 30, 45, 240, 255 };
 
 static int find_nr_w(
         float          *fr_than
 );
 
-static struct float2 interp_angs(
-        int             w
+static void interp_angs(
+        int             w       ,
+        struct int2    *l_V     ,
+        struct int2    *r_V
 );
 
 void init_world(
@@ -201,35 +203,17 @@ void draw_world_3d(
 //        struct float2 occ;
 //        int cov;
 
-        int checked = 0;
-
         // Have not yet devised a better way to do this =(
         for (int i = 0; i < NODE_C; ++i) {
                 world.walls[i].drawn = FALSE;
         }
 
 //        while (!spans_fov(occ_int[0])) {
-        while (checked < NODE_C) {
-                nr_i = find_nr_w(&nr);
-
-                struct float2 lambdas = interp_angs(nr_i);
-
-                struct int2 p_l = {
-                        world.verts[world.walls[nr_i].edge.x].x + lambdas.x * (world.verts[world.walls[nr_i].edge.y].x - world.verts[world.walls[nr_i].edge.x].x),
-                        world.verts[world.walls[nr_i].edge.x].y + lambdas.x * (world.verts[world.walls[nr_i].edge.y].y - world.verts[world.walls[nr_i].edge.x].y)
-                };
-
-                struct int2 p_r = {
-                        world.verts[world.walls[nr_i].edge.x].x + lambdas.y * (world.verts[world.walls[nr_i].edge.y].x - world.verts[world.walls[nr_i].edge.x].x),
-                        world.verts[world.walls[nr_i].edge.x].y + lambdas.y * (world.verts[world.walls[nr_i].edge.y].y - world.verts[world.walls[nr_i].edge.x].y)
-                };
+        while (-1 != (nr_i = find_nr_w(&nr))) {
+                struct int2 p_l, p_r;
+                interp_angs(nr_i, &p_l, &p_r);
 
                 rend_ln(p_l, p_r, vis_c);
-
-                checked++;
-
-
-                continue;
 
 // All this interval stuff that I am unclear if I will need.
 //                occ = world.walls[nr_i].extent;
@@ -349,7 +333,7 @@ void draw_world_3d(
 static int find_nr_w(
         float          *fr_than
 ) {
-        int nearest;
+        int nearest = -1;
         float nr_than = FAR;
         float d;
         for (int i = 0; i < NODE_C; ++i) {
@@ -370,44 +354,75 @@ static int find_nr_w(
         return nearest;
 }        
 
-static struct float2 interp_angs(
-        int             w
+static void interp_angs(
+        int             w       ,
+        struct int2    *l_V     ,
+        struct int2    *r_V
 ) {
-        struct float2 angs = world.walls[w].angs;
+//        struct float2 angs = world.walls[w].angs;
+//
+//// Linear interpolation is not quite right =/
+//        struct float2 lambdas = {
+//                .x = (world.walls[w].extent.x - angs.x) / (angs.y - angs.x),
+//                .y = (world.walls[w].extent.y - angs.x) / (angs.y - angs.x)
+//        };
 
-// Linear interpolation is not quite right =/
-        struct float2 lambdas = {
-                .x = (world.walls[w].extent.x - angs.x) / (angs.y - angs.x),
-                .y = (world.walls[w].extent.y - angs.x) / (angs.y - angs.x)
+// Does not seem to work in the slightest =(
+
+        struct float2 angs = {
+                .x = MIN(world.walls[w].angs.x, world.walls[w].angs.y),
+                .y = MAX(world.walls[w].angs.x, world.walls[w].angs.y)
         };
 
-//// Something majorly amiss in here.
-//        struct float2 line = {
-//                .x = world.verts[world.walls[w].edge.y].x - world.verts[world.walls[w].edge.x].x,
-//                .y = world.verts[world.walls[w].edge.y].y - world.verts[world.walls[w].edge.x].y
-//        };
-//        float tot_w = sqrtf(line.x * line.x + line.y * line.y);
-//
-//        float d_l = calc_dist(world.verts[world.walls[w].edge.x]);
-//        float d_r = calc_dist(world.verts[world.walls[w].edge.y]);
-//
-//        float ex     = world.walls[w].ext_i;
-//        float sin_ie = sinf(PI - ex);
-//        float cos_ie = cosf(PI - ex);
-//        float thet_l = atanf( sin_ie / (d_l - d_r * cos_ie) ); 
-//        float thet_r = atanf( sin_ie / (d_r - d_l * cos_ie) ); 
-//
-//        struct float2 exts = world.walls[w].extent;
-//        float dif_l  = MAX(exts.x, angs.x) - MIN(exts.x, angs.x);
-//        float dif_r  = MAX(exts.y, angs.y) - MIN(exts.y, angs.y);
-//
-//        float w_l = d_l * sinf(dif_l) / sinf(PI - exts.x - thet_l);
-//        float w_r = d_r * sinf(dif_r) / sinf(PI - exts.y - thet_r);
-//
-//        struct float2 lambdas = {
-//                .x = w_l / tot_w,
-//                .y = w_r / tot_w
-//        };
 
-        return lambdas;
+        #define RADIUS  100
+
+// Stricly left and right, unlike v1, v2 by default.
+        // This isn't giving what is expected.
+        struct int2 p1 = rel_p(RADIUS, angs.x);
+        struct int2 p2 = rel_p(RADIUS, angs.y);
+//        float ch_w = sqrtf((p2.x - p1.x) * (p2.x - p1.x) +
+//                                        (p2.y - p1.y) * (p2.y - p1.y));
+
+        l_V->x = p1.x;
+        l_V->y = p1.y;
+
+        r_V->x = p2.x;
+        r_V->y = p2.y;
+
+//        struct float2 exts = world.walls[w].extent;
+//        // Chord lambda left / right.
+//        float cll = sqrtf(2.f * RADIUS * RADIUS * (1.f - cosf(exts.x - angs.x))) / ch_w;
+//        float clr = sqrtf(2.f * RADIUS * RADIUS * (1.f - cosf(exts.y - angs.y))) / ch_w;
+//
+//        struct float2 lp_onc = {
+//                .x = p1.x + cll * (p2.x - p1.x),
+//                .y = p1.y + cll * (p2.y - p1.y)
+//        };
+//
+//        l_V->x = lp_onc.x;
+//        l_V->y = lp_onc.y;
+//
+//        struct float2 rp_onc = {
+//                .x = p1.x + clr * (p2.x - p1.x),
+//                .y = p1.y + clr * (p2.y - p1.y)
+//        };
+//
+//        r_V->x = rp_onc.x;
+//        r_V->y = rp_onc.y;
+
+//        struct int2 v1, v2;
+//        if (angs.x == world.walls[w].angs.x) {
+//                v1 = world.verts[world.walls[w].edge.x];
+//                v2 = world.verts[world.walls[w].edge.y];
+//        } else {
+//                v2 = world.verts[world.walls[w].edge.x];
+//                v1 = world.verts[world.walls[w].edge.y];
+//        }
+//
+//        l_V->x = (lp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
+//        l_V->y = (lp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
+//
+//        r_V->x = (rp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
+//        r_V->y = (rp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
 }
