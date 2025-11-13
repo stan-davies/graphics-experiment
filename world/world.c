@@ -28,6 +28,7 @@ struct wall {
                                         // in radians relative to viewer,
                                         // bounded by FOV
         float           ext_i   ;       // Interval of extent.
+                                        // Probably worth not storing this.
 
         float           dist    ;
 
@@ -400,12 +401,8 @@ static void interp_angs(
 // Stricly left and right, unlike v1, v2 by default.
         struct int2 p1 = rel_p(radius, angs.x);
         struct int2 p2 = rel_p(radius, angs.y);
-        float ch_w = sqrtf((p2.x - p1.x) * (p2.x - p1.x) +
-                                        (p2.y - p1.y) * (p2.y - p1.y));
-
-        // Some freeing error somewhere -> to do with rendering so most likely
-        // trying to render invalid stuff. Hasn't happened since I improved
-        // below stuff.
+        float ch_w_sq  = (p2.x - p1.x) * (p2.x - p1.x) +
+                                                (p2.y - p1.y) * (p2.y - p1.y);
 
         // Some lines are being drawn when they shouldn't - something to do
         // with calculating extent? Seems to happen when particularly close to
@@ -415,8 +412,8 @@ static void interp_angs(
         // Chord lambda left / right.
         // Check these angles are definitely correct. - some kind of problem in
         // them, I am sure.
-        float cll = sqrtf(2.f * rad_sq * (1.f - cosf(exts.x - angs.x))) / ch_w;
-        float clr = sqrtf(2.f * rad_sq * (1.f - cosf(exts.y - angs.x))) / ch_w;
+        float cll = sqrtf(2.f * rad_sq * (1.f - cosf(exts.x - angs.x)) / ch_w_sq);
+        float clr = sqrtf(2.f * rad_sq * (1.f - cosf(exts.y - angs.x)) / ch_w_sq);
 
         struct float2 lp_onc = {
                 .x = p1.x + cll * (p2.x - p1.x),
@@ -428,7 +425,6 @@ static void interp_angs(
                 .y = p1.y + clr * (p2.y - p1.y)
         };
 
-// Some sign error? - don't think so.
         struct int2 v1, v2;
         if (angs.x == world.walls[w].angs.x) {
                 v1 = world.verts[world.walls[w].edge.x];

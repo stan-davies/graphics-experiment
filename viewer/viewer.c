@@ -156,33 +156,16 @@ void calc_ext(
         // Corresponds to vertices.
         angs->x = rel_ang(v1);
         angs->y = rel_ang(v2);
+
         // Strict left and right.
         float angl = MIN(angs->x, angs->y);
         float angr = MAX(angs->x, angs->y);
 
-        float in, out;
+        // Something wrong with calculation for when both are -ive.
+        extent->x = MIN( fabsf(angl), FOV / 2.f ) * angl / fabsf(angl);
+        extent->y = MIN( fabsf(angr), FOV / 2.f ) * angr / fabsf(angr);
 
-// kind of all the same?
-        if (0.f == angl || 0.f == angr) {
-                goto same;
-        } else if (angl / angr < 0.f) {
-                extent->x = - MIN(fabsf(angl), FOV / 2.f);
-                extent->y =   MIN(fabsf(angr), FOV / 2.f);
-        } else {
-same:
-                in  = MIN( fabsf(angl), FOV / 2.f );
-                out = MIN( fabsf(angr), FOV / 2.f );
-
-                if (angl < 0.f || angr < 0.f) {
-                        extent->x = -out;
-                        extent->y = -in;
-                } else {
-                        extent->x = in;
-                        extent->y = out;
-                }
-        }
-
-        *i_e = MAX(extent->x, extent->y) - MIN(extent->x, extent->y);
+        *i_e = MAX(0.f, extent->y - extent->x);
 }
 
 float calc_nrst(
