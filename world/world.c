@@ -103,7 +103,7 @@ void update_world(
         for (int i = 0; i < NODE_C; ++i) {
                 if (
                         i == world.v_held || (
-                                0.f >= world.walls[i].ext_i
+                                0.f == world.walls[i].ext_i
                              && !vx_in_view(
                                         world.verts[world.walls[i].edge.x],
                                         world.verts[world.walls[i].edge.y]
@@ -340,7 +340,7 @@ static int find_nr_w(
         float nr_than = FAR;
         float d;
         for (int i = 0; i < NODE_C; ++i) {
-                if (0 >= world.walls[i].ext_i || world.walls[i].drawn) {
+                if (0 == world.walls[i].ext_i || world.walls[i].drawn) {
                         continue;
                 }
 

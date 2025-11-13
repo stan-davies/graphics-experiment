@@ -10,7 +10,7 @@
 #define NOT_VIS         -8.f
 
 #define MOVE_BY         5
-#define ROTATE_BY       PI / 135.f
+#define ROTATE_BY       PI / 180.f
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
@@ -165,7 +165,9 @@ void calc_ext(
         extent->x = MIN( fabsf(angl), FOV / 2.f ) * angl / fabsf(angl);
         extent->y = MIN( fabsf(angr), FOV / 2.f ) * angr / fabsf(angr);
 
-        *i_e = MAX(0.f, extent->y - extent->x);
+        float dif = MAX(extent->x, extent->y) - MIN(extent->x, extent->y);
+        // Small correction to avoid error.
+        *i_e = MAX(0.f, dif - 0.05f);
 }
 
 float calc_nrst(
