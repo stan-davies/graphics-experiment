@@ -22,7 +22,7 @@ void calc_ext(
         struct int2     v1      ,
         struct int2     v2      ,
         struct float2  *extent  ,       // Left/right most extent.
-        struct float2  *angs    ,       // Actual angles.
+        struct float2  *angs    ,       // Angles of vertices.
         float          *i_e             // Inbetween extent.
 );
 

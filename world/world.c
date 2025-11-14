@@ -100,13 +100,14 @@ void dest_world(
 void update_world(
         void
 ) {
-        for (int i = 0; i < NODE_C; ++i) {
+        for (int w = 0; w < NODE_C; ++w) {      // Iterating over walls.
                 if (
-                        i == world.v_held || (
-                                0.f == world.walls[i].ext_i
+                        world.v_held == world.walls[w].edge.x
+                     || world.v_held == world.walls[w].edge.y
+                     || (       0.f == world.walls[w].ext_i
                              && !vx_in_view(
-                                        world.verts[world.walls[i].edge.x],
-                                        world.verts[world.walls[i].edge.y]
+                                        world.verts[world.walls[w].edge.x],
+                                        world.verts[world.walls[w].edge.y]
                                 )
                         )
                 ) {
@@ -114,16 +115,16 @@ void update_world(
                 }
 
                 calc_ext(
-                        world.verts[world.walls[i].edge.x],
-                        world.verts[world.walls[i].edge.y],
-                        &world.walls[i].extent,
-                        &world.walls[i].angs,
-                        &world.walls[i].ext_i
+                        world.verts[world.walls[w].edge.x],
+                        world.verts[world.walls[w].edge.y],
+                        &world.walls[w].extent,
+                        &world.walls[w].angs,
+                        &world.walls[w].ext_i
                 );
 
-                world.walls[i].dist = calc_nrst(
-                        world.verts[world.walls[i].edge.x],
-                        world.verts[world.walls[i].edge.y]
+                world.walls[w].dist = calc_nrst(
+                        world.verts[world.walls[w].edge.x],
+                        world.verts[world.walls[w].edge.y]
                 );
         }
 }
@@ -172,19 +173,19 @@ void draw_world(
 ) {
         SDL_Color use;
 
-        for (int i = 0; i < NODE_C; ++i) {
-                if (world.v_held == world.walls[i].edge.x
-                 || world.v_held == world.walls[i].edge.y) {
+        for (int w = 0; w < NODE_C; ++w) {
+                if (world.v_held == world.walls[w].edge.x
+                 || world.v_held == world.walls[w].edge.y) {
                         use = held_c;
-                } else if (world.walls[i].ext_i > 0.f) {
+                } else if (world.walls[w].ext_i > 0.f) {
                         use = drop_c;
                 } else {
                         use = hid_c;
                 }
 
                 rend_ln(
-                        world.verts[world.walls[i].edge.x],
-                        world.verts[world.walls[i].edge.y],
+                        world.verts[world.walls[w].edge.x],
+                        world.verts[world.walls[w].edge.y],
                         use
                 );
         }
@@ -200,22 +201,22 @@ void draw_world_3d(
 
         float nr = 0.f;
 
-        int nr_i;
+        int nr_w;
 //        struct float2 occ;
 //        int cov;
 
-        for (int i = 0; i < NODE_C; ++i) {
-                world.walls[i].drawn = FALSE;
+        for (int w = 0; w < NODE_C; ++w) {
+                world.walls[w].drawn = FALSE;
         }
 
 //        while (!spans_fov(occ_int[0])) {
-        while (-1 != (nr_i = find_nr_w(&nr))) {
+        while (-1 != (nr_w = find_nr_w(&nr))) {
                 struct int2 p_l, p_r;
-                interp_angs(nr_i, &p_l, &p_r);
+                interp_angs(nr_w, &p_l, &p_r);
 
                 rend_ln(p_l, p_r, vis_c);
 
-                world.walls[nr_i].drawn = TRUE;
+                world.walls[nr_w].drawn = TRUE;
         }
 
 // All this interval stuff that I am unclear if I will need.
@@ -404,11 +405,10 @@ static void interp_angs(
         float ch_w_sq  = (p2.x - p1.x) * (p2.x - p1.x) +
                                                 (p2.y - p1.y) * (p2.y - p1.y);
 
-        // Some lines are being drawn when they shouldn't - something to do
-        // with calculating extent? Seems to happen when particularly close to
-        // a wall and sending it out of view.
-
-        struct float2 exts = world.walls[w].extent;
+        struct float2 exts = {
+                .x = MIN(world.walls[w].extent.x, world.walls[w].extent.y),
+                .y = MAX(world.walls[w].extent.x, world.walls[w].extent.y)
+        };
         // Chord lambda left / right.
         // Check these angles are definitely correct. - some kind of problem in
         // them, I am sure.

@@ -7,13 +7,16 @@
 
 #define PI              3.141598f
 #define FOV             PI / 2.f
+#define HFOV            FOV / 2.f
 #define NOT_VIS         -8.f
 
 #define MOVE_BY         5
-#define ROTATE_BY       PI / 180.f
+#define ROTATE_BY       PI / 200.f
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
+#define DIF(a, b) (MAX(a, b) - MIN(a, b))
+#define CNT(a, b) (MIN(fabsf(a), fabsf(b)))
 
 static struct {
         struct int2     pos     ;
@@ -81,11 +84,11 @@ static void set_draw(
         viewer.body.x = viewer.pos.x - 5;
         viewer.body.y = viewer.pos.y - 5;
 
-        viewer.lp_la.x = viewer.pos.x + 500 * cosf(viewer.view + FOV / 2.f);
-        viewer.lp_la.y = viewer.pos.y - 500 * sinf(viewer.view + FOV / 2.f);
+        viewer.lp_la.x = viewer.pos.x + 500 * cosf(viewer.view + HFOV);
+        viewer.lp_la.y = viewer.pos.y - 500 * sinf(viewer.view + HFOV);
 
-        viewer.rp_la.x = viewer.pos.x + 500 * cosf(viewer.view - FOV / 2.f);
-        viewer.rp_la.y = viewer.pos.y - 500 * sinf(viewer.view - FOV / 2.f);
+        viewer.rp_la.x = viewer.pos.x + 500 * cosf(viewer.view - HFOV);
+        viewer.rp_la.y = viewer.pos.y - 500 * sinf(viewer.view - HFOV);
 }
 
 static void adj_ang(
@@ -134,12 +137,12 @@ int vx_in_view(
         struct int2     v2
 ) {
         float ang1 = fabsf(rel_ang(v1));
-        if (ang1 <= FOV / 2) {
+        if (ang1 <= HFOV) {
                 return TRUE;
         }
 
         float ang2 = fabsf(rel_ang(v2));
-        if (ang2 <= FOV / 2) {
+        if (ang2 <= HFOV) {
                 return TRUE;
         }
 
@@ -150,24 +153,25 @@ void calc_ext(
         struct int2     v1      ,
         struct int2     v2      ,
         struct float2  *extent  ,       // Left/right most extent.
-        struct float2  *angs    ,       // Actual angles.
+        struct float2  *angs    ,       // Angles to vertices.
         float          *i_e             // Inbetween extent.
 ) {
-        // Corresponds to vertices.
         angs->x = rel_ang(v1);
         angs->y = rel_ang(v2);
 
-        // Strict left and right.
-        float angl = MIN(angs->x, angs->y);
-        float angr = MAX(angs->x, angs->y);
+        extent->x = CNT(angs->x, HFOV) * angs->x / fabsf(angs->x);
+        extent->y = CNT(angs->y, HFOV) * angs->y / fabsf(angs->y);
 
-        // Something wrong with calculation for when both are -ive.
-        extent->x = MIN( fabsf(angl), FOV / 2.f ) * angl / fabsf(angl);
-        extent->y = MIN( fabsf(angr), FOV / 2.f ) * angr / fabsf(angr);
+        // Have a problem when a vertex crosses behind the viewer.
+        if (DIF(angs->x, angs->y) >= PI) {
+                if (MAX(fabsf(extent->x), fabsf(extent->y)) == extent->x) {
+                        extent->x = -HFOV * extent->x / fabsf(extent->x);
+                } else {
+                        extent->y = -HFOV * extent->y / fabsf(extent->y);
+                }
+        }
 
-        float dif = MAX(extent->x, extent->y) - MIN(extent->x, extent->y);
-        // Small correction to avoid error.
-        *i_e = MAX(0.f, dif - 0.05f);
+        *i_e = MAX(0.f, DIF(extent->x, extent->y) - 0.05f);
 }
 
 float calc_nrst(
@@ -207,7 +211,7 @@ float calc_dist(
 int spans_fov(
         struct float2   interval
 ) {
-        return interval.x == -FOV / 2.f && interval.y == FOV / 2.f;
+        return interval.x == -HFOV && interval.y == HFOV;
 }
 
 void draw_viewer(
@@ -257,6 +261,10 @@ int update_viewer(
                 default:
                         return FALSE;
                 }
+        }
+
+        if (1 == i) {           // Indicates no keys were pressed.
+                return FALSE;
         }
 
         set_draw();
