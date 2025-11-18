@@ -65,7 +65,7 @@ struct int2 rel_p(
         float           r       ,
         float           t
 ) {
-        t = viewer.view - t;
+        adj_ang(&t, viewer.view);
 
         struct int2 p = {
                 .x = viewer.pos.x + r * cosf(t),
@@ -162,7 +162,7 @@ void calc_ext(
         extent->x = CNT(angs->x, HFOV) * angs->x / fabsf(angs->x);
         extent->y = CNT(angs->y, HFOV) * angs->y / fabsf(angs->y);
 
-        // Have a problem when a vertex crosses behind the viewer.
+        // Fixes issue for when vertex passes behind the viewer.
         if (DIF(angs->x, angs->y) >= PI) {
                 if (MAX(fabsf(extent->x), fabsf(extent->y)) == extent->x) {
                         extent->x = -HFOV * extent->x / fabsf(extent->x);
@@ -269,4 +269,46 @@ int update_viewer(
 
         set_draw();
         return TRUE;
+}
+
+// Works really well for horizontal walls that are near and terribly for
+// everything else.
+// In terms of vertical walls, some kind of problem in y components?
+// In terms of far, why are they going off of the end? - A problem with
+// whenever the angle is not simply the FOV bounds.
+void points_on_line(
+        struct int2     p1      ,
+        struct int2     p2      ,
+        struct float2   exts    ,
+        struct int2    *a1      ,
+        struct int2    *a2
+) {
+        struct float2 v = {
+                (float)viewer.pos.x,
+                (float)viewer.pos.y
+        };
+        float num, den, lambda;
+
+        adj_ang(&exts.x, -viewer.view);
+        adj_ang(&exts.y, -viewer.view);
+
+
+        // For a1:
+        num = p1.y - v.y + (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+        den = sinf(exts.x) - cosf(exts.x) * (p2.y - p1.y) / (p2.x - p1.x);
+
+        lambda = num / den;
+
+        a1->x = v.x + lambda * cosf(exts.x);
+        a1->y = v.y + lambda * sinf(exts.x);
+
+
+        // for a2:
+        num = p1.y - v.y + (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+        den = sinf(exts.y) - cosf(exts.y) * (p2.y - p1.y) / (p2.x - p1.x);
+
+        lambda = num / den;
+
+        a2->x = v.x + lambda * cosf(exts.y);
+        a2->y = v.y + lambda * sinf(exts.y);
 }

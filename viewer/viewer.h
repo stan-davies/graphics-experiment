@@ -48,4 +48,12 @@ int update_viewer(
         void
 );
 
+void points_on_line(
+        struct int2     p1      ,
+        struct int2     p2      ,
+        struct float2   exts    ,
+        struct int2    *a1      ,
+        struct int2    *a2
+);
+
 #endif

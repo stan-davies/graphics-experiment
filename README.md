@@ -15,17 +15,16 @@ Where to go next:
 
 
 - faux-3D stuff plan:
-        º try out with more walls
         º make it seems 3D with triangle magic
         '-> only render the visible extent of walls by picking the nearest wall
         and having it occupy (perhaps by storing occupied intervals) a certain
         interval in the field of view, then when drawing farther away walls,
         culling any part of them in occupied regions. We can also then
         terminate early if the field of view has been fully occupied.
-        º checking does seem to work although errors occasionally occur when
-        vertices have been moved then you walk through a wall or something.
-        Presumably this is not something that would ever happen in real
-        rendering but test more.
+        º fix this problem with walls flattening to the left and the other one
+        about the slightly off interpolation
+        º alternatively, go for this line intersection approach and just iron
+        out the few issues with that
 
 
 - add a different way of making the world
