@@ -47,7 +47,7 @@ void loop(
                         update_world();
                 }
 
-                draw_world();
+//                draw_world();
                 draw_world_3d();
                 draw_viewer();
 

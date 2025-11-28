@@ -293,6 +293,13 @@ void points_on_line(
         adj_ang(&exts.x, viewer.view);
         adj_ang(&exts.y, viewer.view);
 
+        // Trying to patch up an annoying bug when perfectly aligned to a
+        // vertex of a horizontal wall.
+        // Does not work yet =(
+        if (p2.x == v.x || p1.x == v.x) {
+                v.x += 1.f;
+        }
+
 
         // For a1:
         if (0.f == p2.x - p1.x) {
