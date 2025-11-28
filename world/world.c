@@ -52,12 +52,6 @@ static int find_nr_w(
         float          *fr_than
 );
 
-static void interp_angs(
-        int             w       ,
-        struct int2    *l_V     ,
-        struct int2    *r_V
-);
-
 void init_world(
         void
 ) {
@@ -154,7 +148,7 @@ void check_mclick(
         }
 
         // create new vertex
-        world.v_held = HOLD_NEW;
+//        world.v_held = HOLD_NEW;
 }
 
 void check_mmove(
@@ -212,7 +206,7 @@ void draw_world_3d(
 //        while (!spans_fov(occ_int[0])) {
         while (-1 != (nr_w = find_nr_w(&nr))) {
                 struct int2 p_l, p_r;
-//                interp_angs(nr_w, &p_l, &p_r);
+
                 points_on_line(
                         world.verts[world.walls[nr_w].edge.x],
                         world.verts[world.walls[nr_w].edge.y],
@@ -224,8 +218,6 @@ void draw_world_3d(
 
                 world.walls[nr_w].drawn = TRUE;
         }
-
-        world.v_held = NO_HELD;
 
 // All this interval stuff that I am unclear if I will need.
 //                occ = world.walls[nr_i].extent;
@@ -367,122 +359,3 @@ static int find_nr_w(
         *fr_than = nr_than;
         return nearest;
 }        
-
-static void interp_angs(
-        int             w       ,
-        struct int2    *l_V     ,
-        struct int2    *r_V
-) {
-
-/*
-// Linear interpolation - fairly good but not correct and so prone to error.
-        struct float2 angs = world.walls[w].angs;
-        
-        struct float2 lambdas = {
-                .x = (world.walls[w].extent.x - angs.x) / (angs.y - angs.x),
-                .y = (world.walls[w].extent.y - angs.x) / (angs.y - angs.x)
-        };
-
-        struct int2 v1 = world.verts[world.walls[w].edge.x];
-        struct int2 v2 = world.verts[world.walls[w].edge.y];
-
-        l_V->x = v1.x + lambdas.x * (v2.x - v1.x);
-        l_V->y = v1.y + lambdas.x * (v2.y - v1.y);
-
-        r_V->x = v1.x + lambdas.y * (v2.x - v1.x);
-        r_V->y = v1.y + lambdas.y * (v2.y - v1.y);
-
-
-*/
-
-// --- 
-
-// Does left/right distinction even really matter?
-
-// Interpolate from angle to point on chord of circle around viewer, then
-// linear interpolation from chord to wall. Seems a solid method but a bit
-// buggy in places with values jumping around.
-
-        struct float2 angs = { 
-                .x = world.walls[w].angs.x,
-                .y = world.walls[w].angs.y
-        };
-        struct int2 v1 = world.verts[world.walls[w].edge.x];
-        struct int2 v2 = world.verts[world.walls[w].edge.y];
-
-        // Larger radius seems to give more accurate results. Presumably just
-        // floating point error (?).
-        float radius = 100.f;
-        float rad_sq = radius * radius;
-
-// Also corresponding to the specific vertices because of angs.x/y
-        struct int2 p1 = rel_p(radius, angs.x);
-        struct int2 p2 = rel_p(radius, angs.y);
-        float ch_w_sq  = (p2.x - p1.x) * (p2.x - p1.x) +
-                                                (p2.y - p1.y) * (p2.y - p1.y);
-
-        rend_ln(p1, p2, drop_c);
-
-        // All seems good upto this point.
-
-// I now reckon this corresponds as well.
-        struct float2 exts = world.walls[w].extent;
-
-// Definitely some kind of problem in cll/r or l/rp_onc. Most notable when
-// close to a wall and looking at it - the green visible bit on the chord is
-// clearly too large.
-
-// Chord lambda corresponding to vertices 1,2.
-        // Will this make a difference given cos repeats? Is it kind of all the
-        // same?
-        float th_x = MAX(exts.x, angs.x) - MIN(exts.x, angs.x);
-        float th_y = MAX(exts.y, angs.x) - MIN(exts.y, angs.x);
-
-        // These lambda values will be on different chords, so the whole idea
-        // is kind of futile.
-        float clx = sqrtf((2.f * rad_sq * (1.f - cosf(th_x))) / ch_w_sq);
-                // ^ Chord that maps from outer point of line to first visible
-                // point on line.
-        float cly = sqrtf((2.f * rad_sq * (1.f - cosf(th_y))) / ch_w_sq);
-                // ^ Chord that maps from outer point of line to last visible
-                // point on line.
-        // We want both on the chord that maps from outer pointer to point all
-        // the way down the other end.
-
-        // Not even sure if the numbers we are getting are at all correct.
-        if (world.v_held == world.walls[w].edge.x || world.v_held == world.walls[w].edge.y) {
-                printf("1: %f, %f -> %f\n2: %f, %f -> %f\n\n", 
-                        TO_DEG(exts.x), TO_DEG(angs.x),
-                        TO_DEG(th_x),
-                        TO_DEG(exts.y), TO_DEG(angs.x),
-                        TO_DEG(th_y)
-                );
-        }
-
-        struct float2 xp_onc = {
-                .x = p1.x + clx * (p2.x - p1.x),
-                .y = p1.y + clx * (p2.y - p1.y)
-        };
-
-        struct float2 yp_onc = {
-                .x = p1.x + cly * (p2.x - p1.x),
-                .y = p1.y + cly * (p2.y - p1.y)
-        };
-
-// Does not perfectly fill field of view - get that fixed first.
-        l_V->x = xp_onc.x;
-        l_V->y = xp_onc.y;
-  
-        r_V->x = yp_onc.x;
-        r_V->y = yp_onc.y;
-
-        return;
-
-        // Sometimes right wall gets x=0 - problem with this (doesn't happen in
-        // lin. interp. or when drawing chords.)
-        l_V->x = (xp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
-        l_V->y = (xp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
-
-        r_V->x = (yp_onc.x - p1.x) * (v2.x - v1.x) / (p2.x - p1.x) + v1.x;
-        r_V->y = (yp_onc.y - p1.y) * (v2.y - v1.y) / (p2.y - p1.y) + v1.y;
-}

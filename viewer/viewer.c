@@ -18,6 +18,8 @@
 #define DIF(a, b) (MAX(a, b) - MIN(a, b))
 #define CNT(a, b) (MIN(fabsf(a), fabsf(b)))
 
+#define TO_DEG(t) (t * 180.f / PI)
+
 static struct {
         struct int2     pos     ;
 
@@ -271,11 +273,10 @@ int update_viewer(
         return TRUE;
 }
 
-// Works really well for horizontal walls that are near and terribly for
-// everything else.
-// In terms of vertical walls, some kind of problem in y components?
-// In terms of far, why are they going off of the end? - A problem with
-// whenever the angle is not simply the FOV bounds.
+// The special case for dx=0 takes lambda = mu, i.e. the distance
+// (proportionally) along the wall is the same as the distance along the FOV
+// line to the wall.
+// Note really sure why that works lol.
 void points_on_line(
         struct int2     p1      ,
         struct int2     p2      ,
@@ -289,26 +290,36 @@ void points_on_line(
         };
         float num, den, lambda;
 
-        adj_ang(&exts.x, -viewer.view);
-        adj_ang(&exts.y, -viewer.view);
+        adj_ang(&exts.x, viewer.view);
+        adj_ang(&exts.y, viewer.view);
 
 
         // For a1:
-        num = p1.y - v.y + (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
-        den = sinf(exts.x) - cosf(exts.x) * (p2.y - p1.y) / (p2.x - p1.x);
+        if (0.f == p2.x - p1.x) {
+                num = p1.x - v.x;
+                den = cosf(exts.x) - p2.x + p1.x;
+        } else {
+                num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+                den = sinf(exts.x) + cosf(exts.x) * (p2.y - p1.y) / (p2.x - p1.x);
+        }
 
         lambda = num / den;
 
         a1->x = v.x + lambda * cosf(exts.x);
-        a1->y = v.y + lambda * sinf(exts.x);
+        a1->y = v.y - lambda * sinf(exts.x);
 
 
         // for a2:
-        num = p1.y - v.y + (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
-        den = sinf(exts.y) - cosf(exts.y) * (p2.y - p1.y) / (p2.x - p1.x);
+        if (0.f == p2.x - p1.x) {
+                num = p1.x - v.x;
+                den = cosf(exts.y) - p2.x + p1.x;
+        } else {
+                num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+                den = sinf(exts.y) + cosf(exts.y) * (p2.y - p1.y) / (p2.x - p1.x);
+        }
 
         lambda = num / den;
 
         a2->x = v.x + lambda * cosf(exts.y);
-        a2->y = v.y + lambda * sinf(exts.y);
+        a2->y = v.y - lambda * sinf(exts.y);
 }
