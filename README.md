@@ -12,7 +12,8 @@
 
 
 - So for now,
-+ Get the 'span' thing off the ground.
++ Get the 'span' thing off the ground - kind of works. Main problem is for when
+a wall has another in front of it's midsection. No idea what to do for that.
 + Introduce proper 3D rendering of shapes.
 + Make viewer emit light, so vertex distance is mapped onto brightness.
 

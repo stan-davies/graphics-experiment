@@ -14,10 +14,10 @@
 #define PI              3.141598f
 #define TO_DEG(a) (a * 180.f / PI)
 
-#define IN_INTERVAL(ang, interval) (ang > interval.x && ang < interval.y)
-
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
+
+#define IN_INTERVAL(ang, interval) (ang >= MIN(interval.x, interval.y) && ang <= MAX(interval.x, interval.y))
 
 struct wall {
         struct int2     edge    ;
@@ -189,9 +189,6 @@ void draw_world(
 void draw_world_3d(
         void
 ) {
-        // Make own function or something?
-        // Would probably need multiple =(
-        // Definitely do that.
         struct float2 *occ_int = calloc(MAX_INTS, sizeof(struct float2));
         int ints = 0;
 
@@ -199,9 +196,6 @@ void draw_world_3d(
 
         int nr_w;
         struct float2 occ;
-        int cov1, cov2;
-
-        SDL_Color drawcol;
 
         for (int w = 0; w < NODE_C; ++w) {
                 world.walls[w].ckd = FALSE;
@@ -209,56 +203,41 @@ void draw_world_3d(
 
         while (-1 != (nr_w = find_nr_w(&nr))) {
                 // No idea if this works properly.
-                // Definitely leads to segfault.
-//                if (spans_fov(occ_int[0])) {
-//                        break;
-//                }
-                occ = world.walls[nr_w].extent;
-                cov1 = cov2 = FALSE;
+                if (spans_fov(occ_int[0])) {
+                        break;
+                }
+                occ.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
+                occ.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
 
-                // Does in interval know how to handle stuff crossing over?
-                // Should always be behind viewer thus out of view and so not a
-                // problem.
-
-
-                // Angles aren't right/left anymore!
+                // What if a wall needs to be split into two?
+                // '-> Angles may not be contained, whole thing drawn =(
 
                 for (int i = 0; i < ints; ++i) {
                         // Left most angle hidden, start from right of nearer
                         // wall.
                         if (IN_INTERVAL(occ.x, occ_int[i])) {
                                 occ.x = occ_int[i].y;
-                                cov1 = TRUE;
 
+// Does this make any sense?
                                 if (!IN_INTERVAL(occ.y, occ_int[i])) {
                                         occ_int[i].y = occ.y;
                                 }
-                                // So long as right most angle is visible,
-                                // extend this interval to that angle, but
-                                // when?
                         }
 
                         // Right most angle hidden, start from left of nearer
                         // wall.
                         if (IN_INTERVAL(occ.y, occ_int[i])) {
                                 occ.y = occ_int[i].x;
-                                cov2 = TRUE;
 
                                 if (!IN_INTERVAL(occ.x, occ_int[i])) {
                                         occ_int[i].x = occ.y;
                                 }
-                                // So long as left most angle is visible,
-                                // extend this interval to that angle, but
-                                // when?
                         }
                 }
 
-                // 0 span or left most angle has moved to right of right most
-                // angle.
-                if (occ.x == occ.y || occ.x > occ.y) {
+                if (occ.x <= occ.y) {
                         // Totally hidden!
-                        // Seems to lead to segfault.
-//                        continue;
+                        goto clean;
                 }
 
                 if (MAX_INTS == ints) {
@@ -266,51 +245,28 @@ void draw_world_3d(
                         break;
                 }
 
-                if (!cov1 && !cov2) {
-                        occ_int[ints++] = occ;
-                }
-
-                // Not sure this is working.
-                if (!cov1 || !cov2) {
-                        drawcol = vis_c;
-                } else {
-                        drawcol = hid_c;
-                }
+                occ_int[ints++] = occ;
 
                 struct int2 a1, a2;
 
                 points_on_line(
                         world.verts[world.walls[nr_w].edge.x],
                         world.verts[world.walls[nr_w].edge.y],
-                        world.walls[nr_w].extent,
-                        &a1, &a2
+                        occ, &a1, &a2
                 );
 
-                rend_ln(a1, a2, drawcol);
+                rend_ln(a1, a2, vis_c);
 
-                // Draw wall within this interval - do in 2D for now as reference.
-                // 1. Find the coordinates of the visible ends of the wall.
-                // 2. Draw line between them.
-                // 3D:
-                //  2. Find distance to each point.
-                //  3. Use some kind of fancy linear function to map distance
-                //  to point onto wall height.
-                //  4. Create a floor and ceiling vertex for each point.
-                //  5. Draw up some triangles inbetween.
+                // Make it 3D =o
 
-                // Will we use gm man? Seems kind of silly to use a linked list
-                // given we will just destroy this data and create it all anew
-                // for the next frame =/
-                // Speaking of, is that really the way to go? I guess it is
-                // actually not that complex on the calculations, so yes...
-
-                // Check through intervals, if any overlap, merge into one.
+clean:
                 for (int i = 0; i < ints; ++i) {
                         for (int j = 0; j < ints; ++j) {
                                 if (i == j) {
                                         continue;
                                 }
 
+// This could conceivably be total rubbish.
                                 if (IN_INTERVAL(occ_int[i].x, occ_int[j])) {
                                         occ_int[i].x = occ_int[j].x;
                                         occ_int[i].y = MAX(occ_int[i].y, occ_int[j].y);
