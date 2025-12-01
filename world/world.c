@@ -17,7 +17,8 @@
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
 
-#define IN_INTERVAL(ang, interval) (ang >= MIN(interval.x, interval.y) && ang <= MAX(interval.x, interval.y))
+// Should or should not be strict inequalities? Own function too?
+#define IN_INTERVAL(ang, interval) (ang > MIN(interval.x, interval.y) && ang < MAX(interval.x, interval.y))
 
 struct wall {
         struct int2     edge    ;
@@ -210,7 +211,8 @@ void draw_world_3d(
                 occ.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
 
                 // What if a wall needs to be split into two?
-                // '-> Angles may not be contained, whole thing drawn =(
+                // '-> Angles may not be contained, whole thing drawn :(
+                // '-> Would need a whole other analysis and stuff then =o
 
                 for (int i = 0; i < ints; ++i) {
                         // Left most angle hidden, start from right of nearer
@@ -219,6 +221,7 @@ void draw_world_3d(
                                 occ.x = occ_int[i].y;
 
 // Does this make any sense?
+// What with having set min/max for angles, should do.
                                 if (!IN_INTERVAL(occ.y, occ_int[i])) {
                                         occ_int[i].y = occ.y;
                                 }
@@ -258,26 +261,34 @@ void draw_world_3d(
                 rend_ln(a1, a2, vis_c);
 
                 // Make it 3D =o
-
 clean:
+                struct float2 c_int;
+                int rem;
                 for (int i = 0; i < ints; ++i) {
                         for (int j = 0; j < ints; ++j) {
                                 if (i == j) {
                                         continue;
                                 }
 
-// This could conceivably be total rubbish.
-                                if (IN_INTERVAL(occ_int[i].x, occ_int[j])) {
-                                        occ_int[i].x = occ_int[j].x;
-                                        occ_int[i].y = MAX(occ_int[i].y, occ_int[j].y);
+                                c_int = occ_int[j];
+                                rem = FALSE;
 
-                                        occ_int[j] = occ_int[--ints];
+// This could conceivably be total rubbish.
+                                if (IN_INTERVAL(occ_int[i].x, c_int)) {
+                                        occ_int[i].x = occ_int[j].x;
+                                        occ_int[i].y = MAX(occ_int[i].y, c_int.y);
+
+                                        rem = TRUE;
                                 }
 
-                                if (IN_INTERVAL(occ_int[i].y, occ_int[j])) {
-                                        occ_int[i].y = occ_int[j].y;
-                                        occ_int[i].x = MIN(occ_int[i].x, occ_int[j].x);
+                                if (IN_INTERVAL(occ_int[i].y, c_int)) {
+                                        occ_int[i].y = c_int.y;
+                                        occ_int[i].x = MIN(occ_int[i].x, c_int.x);
 
+                                        rem = TRUE;
+                                }
+
+                                if (rem) {
                                         occ_int[j] = occ_int[--ints];
                                 }
                         }
