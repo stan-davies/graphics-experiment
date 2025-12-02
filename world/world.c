@@ -2,6 +2,7 @@
 
 #include "viewer/viewer.h"
 #include "rend/rend.h"
+#include "occi_man/occi_man.h"
 
 #define NODE_C          8
 
@@ -190,110 +191,45 @@ void draw_world(
 void draw_world_3d(
         void
 ) {
-        struct float2 *occ_int = calloc(MAX_INTS, sizeof(struct float2));
-        int ints = 0;
-
         float nr = 0.f;
-
         int nr_w;
-        struct float2 occ;
+
+        struct float2  inter;
+        struct float2 *dr_segs;
+        int drc;
+
+        struct int2 a1, a2;             // Endpoints of segment to draw.
 
         for (int w = 0; w < NODE_C; ++w) {
                 world.walls[w].ckd = FALSE;
         }
 
+        init_occi_man();
+
         while (-1 != (nr_w = find_nr_w(&nr))) {
-                // No idea if this works properly.
-                if (spans_fov(occ_int[0])) {
-                        break;
-                }
-                occ.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
-                occ.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
 
-                // What if a wall needs to be split into two?
-                // '-> Angles may not be contained, whole thing drawn :(
-                // '-> Would need a whole other analysis and stuff then =o
+                inter.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
+                inter.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
 
-                for (int i = 0; i < ints; ++i) {
-                        // Left most angle hidden, start from right of nearer
-                        // wall.
-                        if (IN_INTERVAL(occ.x, occ_int[i])) {
-                                occ.x = occ_int[i].y;
+                drc = get_vis(inter, &dr_segs);
 
-// Does this make any sense?
-// What with having set min/max for angles, should do.
-                                if (!IN_INTERVAL(occ.y, occ_int[i])) {
-                                        occ_int[i].y = occ.y;
-                                }
-                        }
+                for (int s = 0; s < drc; ++s) {
+                        points_on_line(
+                                world.verts[world.walls[nr_w].edge.x],
+                                world.verts[world.walls[nr_w].edge.y],
+                                dr_segs[s], &a1, &a2
+                        );
 
-                        // Right most angle hidden, start from left of nearer
-                        // wall.
-                        if (IN_INTERVAL(occ.y, occ_int[i])) {
-                                occ.y = occ_int[i].x;
-
-                                if (!IN_INTERVAL(occ.x, occ_int[i])) {
-                                        occ_int[i].x = occ.y;
-                                }
-                        }
+                        rend_ln(a1, a2, vis_c);
                 }
 
-                if (occ.x <= occ.y) {
-                        // Totally hidden!
-                        goto clean;
-                }
-
-                if (MAX_INTS == ints) {
-                        log_err("Too few intervals.");
-                        break;
-                }
-
-                occ_int[ints++] = occ;
-
-                struct int2 a1, a2;
-
-                points_on_line(
-                        world.verts[world.walls[nr_w].edge.x],
-                        world.verts[world.walls[nr_w].edge.y],
-                        occ, &a1, &a2
-                );
-
-                rend_ln(a1, a2, vis_c);
+                free(dr_segs);
+                dr_segs = NULL;
 
                 // Make it 3D =o
-clean:
-                struct float2 c_int;
-                int rem;
-                for (int i = 0; i < ints; ++i) {
-                        for (int j = 0; j < ints; ++j) {
-                                if (i == j) {
-                                        continue;
-                                }
-
-                                c_int = occ_int[j];
-                                rem = FALSE;
-
-// This could conceivably be total rubbish.
-                                if (IN_INTERVAL(occ_int[i].x, c_int)) {
-                                        occ_int[i].x = occ_int[j].x;
-                                        occ_int[i].y = MAX(occ_int[i].y, c_int.y);
-
-                                        rem = TRUE;
-                                }
-
-                                if (IN_INTERVAL(occ_int[i].y, c_int)) {
-                                        occ_int[i].y = c_int.y;
-                                        occ_int[i].x = MIN(occ_int[i].x, c_int.x);
-
-                                        rem = TRUE;
-                                }
-
-                                if (rem) {
-                                        occ_int[j] = occ_int[--ints];
-                                }
-                        }
-                }
         }
+
+        dest_occi_man();
 }
 
 static int find_nr_w(

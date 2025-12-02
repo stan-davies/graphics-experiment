@@ -1,5 +1,5 @@
 CMD = gcc
-SRC = main.c util/util.c rend/rend.c util/logw/logw.c util/sdl_util/sdl_util.c gm_man/gm_man.c viewer/viewer.c world/world.c loop/loop.c key_man/key_man.c
+SRC = main.c util/util.c rend/rend.c util/logw/logw.c util/sdl_util/sdl_util.c gm_man/gm_man.c viewer/viewer.c world/world.c loop/loop.c key_man/key_man.c occi_man/occi_man.c
 OBJ = $(SRC:.c=.o)
 INC = -I .
 FLG = `sdl2-config --cflags --libs`
