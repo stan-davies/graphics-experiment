@@ -9,6 +9,8 @@
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a > b ? a : b)
 
+#define RAD_TO_DEG(t) (t * 180.f / 3.141598f)
+
 static struct {
         struct float2  *occis   ;       // Occupied intervals.
         int             intc    ;       // Number of ...
@@ -53,7 +55,7 @@ void dest_occi_man(
 //                        break;
 //                }
 
-int get_vis(                            // Returns whether or not the wall was
+int get_seg(                            // Returns whether or not the wall was
                                         // split into multiple, discontinuous,
                                         // visible segments. This is also the
                                         // length of vints.
@@ -61,8 +63,7 @@ int get_vis(                            // Returns whether or not the wall was
         struct float2   wall    ,       // Interval within FOV
         struct float2 **segs            // Visible segments to draw.
 ) {
-        *segs = calloc(2, sizeof(struct float2));       // Freed by caller (I hope...)
-                // Shouldn't ever need more than 2.
+        *segs = calloc(8, sizeof(struct float2));       // Freed by caller (I hope...)
         int segc = OCCI_WHID;
 
         (*segs)[segc++] = wall;
@@ -77,29 +78,33 @@ int get_vis(                            // Returns whether or not the wall was
                                 (*segs)[s].y = occi_man.occis[i].x;
                         }
 
-                        if (int_in_int(occi_man.occis[i], (*segs)[s])) {
-                                if (s > 0) {
-                                        log_err("Double split.");
-                                        continue;
-                                }
-
-// Rightmost segment runs from right of forewall to right of rearwall.
-                                (*segs)[1].x = occi_man.occis[i].y;
-                                (*segs)[1].y = (*segs)[0].y;
-
-// Leftmost segment runs from left of rearwall (as is) to left of forewall.
-                                (*segs)[0].y = occi_man.occis[i].x;
-
-                                segc++;
-                        }
+//                        if (int_in_int(occi_man.occis[i], (*segs)[s])) {
+//                                if (8 == segc) {
+//                                        log_err("Too many splits");
+//                                        continue;
+//                                }
+//
+//// Rightmost segment runs from right of forewall to right of rearwall.
+//                                (*segs)[segc].x = occi_man.occis[i].y;
+//                                (*segs)[segc].y = (*segs)[s].y;
+//
+//// Leftmost segment runs from left of rearwall (as is) to left of forewall.
+//                                (*segs)[s].y = occi_man.occis[i].x;
+//
+//                                segc++;
+//                        }
 
                         if (!valid_int((*segs)[s])) {
-                                // Stop checking this one, may need to switch 0
-                                // and 1 for that to happen, often won't.
+                                log_msg("(%.0f, %.0f) not valid)", 
+                                        RAD_TO_DEG((*segs)[s].x),
+                                        RAD_TO_DEG((*segs)[s].y)
+                                );
+                                (*segs)[s] = (*segs)[segc--];
                         }
                 }
         }
 
+// Surely not the best way to do this since there is almost definitely overlap.
         for (int s = 0; s < segc; ++s) {
                 occi_man.occis[occi_man.intc++] = (*segs)[s];
                 if (occi_man.intc >= MAX_INTS) {
@@ -108,6 +113,14 @@ int get_vis(                            // Returns whether or not the wall was
         }
 
         clean_occi();
+
+        for (int i = 0; i < occi_man.intc; ++i) {
+                log_msg("(%.0f, %.0f)", 
+                        RAD_TO_DEG(occi_man.occis[i].x), 
+                        RAD_TO_DEG(occi_man.occis[i].y)
+                );
+        }
+        log_msg("");
         
         return segc;
 }
@@ -127,8 +140,8 @@ static void clean_occi(
 // This could conceivably be total rubbish.
                         if (ang_in_int(occi_man.occis[i].x, c_int) 
                          || ang_in_int(occi_man.occis[i].y, c_int)) {
-                                occi_man.occis[i].x = MIN(occi_man.occis[i].x, c_int.x);
-                                occi_man.occis[i].y = MAX(occi_man.occis[i].y, c_int.y);
+                                occi_man.occis[i].x = MAX(occi_man.occis[i].x, c_int.x);
+                                occi_man.occis[i].y = MIN(occi_man.occis[i].y, c_int.y);
 
                                 occi_man.occis[j] = occi_man.occis[--occi_man.intc];
                         }
@@ -139,19 +152,19 @@ static void clean_occi(
 static inline int valid_int(
         struct float2   inter
 ) {
-        return (inter.x < inter.y);
+        return (inter.x > inter.y);
 }
 
 static inline int ang_in_int(
         float           ang     ,
         struct float2   inter
 ) {
-        return (ang > inter.x && ang < inter.y);
+        return (ang >= inter.x && ang <= inter.y);
 }
 
 static inline int int_in_int(
         struct float2   inner   ,
         struct float2   outer
 ) {
-        return (outer.x < inner.x && outer.y > inner.y);
+        return (outer.x <= inner.x && outer.y >= inner.y);
 }

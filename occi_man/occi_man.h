@@ -17,7 +17,7 @@ void dest_occi_man(
 );
 // -- 
 
-int get_vis(                            // Returns whether or not the wall was
+int get_seg(                            // Returns whether or not the wall was
                                         // split into multiple, discontinuous,
                                         // visible segments. This is also the
                                         // length of vints.

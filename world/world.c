@@ -18,9 +18,6 @@
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a < b ? b : a)
 
-// Should or should not be strict inequalities? Own function too?
-#define IN_INTERVAL(ang, interval) (ang > MIN(interval.x, interval.y) && ang < MAX(interval.x, interval.y))
-
 struct wall {
         struct int2     edge    ;
 
@@ -46,7 +43,7 @@ static struct {
         int             v_held  ;
 } world;
 
-static SDL_Color vis_c  = { 0, 255, 0, 255 };
+static SDL_Color vis_c  = { 0, 0, 0, 255 };
 static SDL_Color hid_c  = { 255, 0, 0, 255 };
 static SDL_Color held_c = { 60, 90, 240, 255 };
 static SDL_Color drop_c = { 30, 45, 240, 255 };
@@ -194,11 +191,11 @@ void draw_world_3d(
         float nr = 0.f;
         int nr_w;
 
-        struct float2  inter;
-        struct float2 *dr_segs;
+        struct float2  inter;   // Extent of wall within FOV.
+        struct float2 *dr_segs; // Array of segments to draw as angle pairs.
         int drc;
 
-        struct int2 a1, a2;             // Endpoints of segment to draw.
+        struct int2 a1, a2;     // Endpoints of segment to draw.
 
         for (int w = 0; w < NODE_C; ++w) {
                 world.walls[w].ckd = FALSE;
@@ -206,12 +203,16 @@ void draw_world_3d(
 
         init_occi_man();
 
+//        int sg_d = 0;
+//
+//        log_msg("Render pass");
+
         while (-1 != (nr_w = find_nr_w(&nr))) {
 
                 inter.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
                 inter.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
 
-                drc = get_vis(inter, &dr_segs);
+                drc = get_seg(inter, &dr_segs);
 
                 for (int s = 0; s < drc; ++s) {
                         points_on_line(
@@ -223,6 +224,10 @@ void draw_world_3d(
                         rend_ln(a1, a2, vis_c);
                 }
 
+//                log_msg("   %d", drc);
+//
+//                sg_d += drc;
+
                 free(dr_segs);
                 dr_segs = NULL;
 
@@ -230,6 +235,8 @@ void draw_world_3d(
         }
 
         dest_occi_man();
+
+//        log_msg("   total: %d", sg_d);
 }
 
 static int find_nr_w(
