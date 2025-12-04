@@ -78,27 +78,23 @@ int get_seg(                            // Returns whether or not the wall was
                                 (*segs)[s].y = occi_man.occis[i].x;
                         }
 
-//                        if (int_in_int(occi_man.occis[i], (*segs)[s])) {
-//                                if (8 == segc) {
-//                                        log_err("Too many splits");
-//                                        continue;
-//                                }
-//
-//// Rightmost segment runs from right of forewall to right of rearwall.
-//                                (*segs)[segc].x = occi_man.occis[i].y;
-//                                (*segs)[segc].y = (*segs)[s].y;
-//
-//// Leftmost segment runs from left of rearwall (as is) to left of forewall.
-//                                (*segs)[s].y = occi_man.occis[i].x;
-//
-//                                segc++;
-//                        }
+                        if (int_in_int(occi_man.occis[i], (*segs)[s])) {
+                                if (8 == segc) {
+                                        log_err("Too many splits");
+                                        continue;
+                                }
+
+// Rightmost segment runs from right of forewall to right of rearwall.
+                                (*segs)[segc].x = occi_man.occis[i].y;
+                                (*segs)[segc].y = (*segs)[s].y;
+
+// Leftmost segment runs from left of rearwall (as is) to left of forewall.
+                                (*segs)[s].y = occi_man.occis[i].x;
+
+                                segc++;
+                        }
 
                         if (!valid_int((*segs)[s])) {
-                                log_msg("(%.0f, %.0f) not valid)", 
-                                        RAD_TO_DEG((*segs)[s].x),
-                                        RAD_TO_DEG((*segs)[s].y)
-                                );
                                 (*segs)[s] = (*segs)[segc--];
                         }
                 }
@@ -114,14 +110,6 @@ int get_seg(                            // Returns whether or not the wall was
 
         clean_occi();
 
-        for (int i = 0; i < occi_man.intc; ++i) {
-                log_msg("(%.0f, %.0f)", 
-                        RAD_TO_DEG(occi_man.occis[i].x), 
-                        RAD_TO_DEG(occi_man.occis[i].y)
-                );
-        }
-        log_msg("");
-        
         return segc;
 }
 
@@ -137,9 +125,9 @@ static void clean_occi(
 
                         c_int = occi_man.occis[j];
 
-// This could conceivably be total rubbish.
                         if (ang_in_int(occi_man.occis[i].x, c_int) 
                          || ang_in_int(occi_man.occis[i].y, c_int)) {
+                                log_msg("crunch");
                                 occi_man.occis[i].x = MAX(occi_man.occis[i].x, c_int.x);
                                 occi_man.occis[i].y = MIN(occi_man.occis[i].y, c_int.y);
 
@@ -159,12 +147,12 @@ static inline int ang_in_int(
         float           ang     ,
         struct float2   inter
 ) {
-        return (ang >= inter.x && ang <= inter.y);
+        return (ang <= inter.x && ang >= inter.y);
 }
 
 static inline int int_in_int(
         struct float2   inner   ,
         struct float2   outer
 ) {
-        return (outer.x <= inner.x && outer.y >= inner.y);
+        return (outer.x >= inner.x && outer.y <= inner.y);
 }

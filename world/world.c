@@ -203,10 +203,6 @@ void draw_world_3d(
 
         init_occi_man();
 
-//        int sg_d = 0;
-//
-//        log_msg("Render pass");
-
         while (-1 != (nr_w = find_nr_w(&nr))) {
 
                 inter.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
@@ -224,10 +220,6 @@ void draw_world_3d(
                         rend_ln(a1, a2, vis_c);
                 }
 
-//                log_msg("   %d", drc);
-//
-//                sg_d += drc;
-
                 free(dr_segs);
                 dr_segs = NULL;
 
@@ -235,8 +227,6 @@ void draw_world_3d(
         }
 
         dest_occi_man();
-
-//        log_msg("   total: %d", sg_d);
 }
 
 static int find_nr_w(
