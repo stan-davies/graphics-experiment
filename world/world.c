@@ -7,10 +7,11 @@
 #define NODE_C          8
 
 #define NO_HELD        -1
-#define HOLD_NEW       -2
 
 #define FAR             1000.f
-#define MAX_INTS        8
+
+#define MODE_2D         2
+#define MODE_3D         3
 
 #define PI              3.141598f
 #define TO_DEG(a) (a * 180.f / PI)
@@ -29,7 +30,7 @@ struct wall {
         float           ext_i   ;       // Interval of extent.
                                         // Probably worth not storing this.
 
-        float           dist    ;
+        float           dist    ;       // Current nearest wall's distance (?).
 
         int             ckd     ;       // Already analysed on current
                                         // rendering pass.
@@ -41,12 +42,20 @@ static struct {
         struct wall    *walls   ;
 
         int             v_held  ;
+        int             mode    ;
 } world;
 
-static SDL_Color vis_c  = { 0, 0, 0, 255 };
-static SDL_Color hid_c  = { 255, 0, 0, 255 };
+static SDL_Color vis_c  = { 30, 240, 45, 255 };
 static SDL_Color held_c = { 60, 90, 240, 255 };
-static SDL_Color drop_c = { 30, 45, 240, 255 };
+
+static void draw_seg_2d(
+        int             w_ind   ,
+        struct float2   seg
+);
+
+static void draw_seg_3d(
+        void
+);
 
 static int find_nr_w(
         float          *fr_than
@@ -94,6 +103,22 @@ void dest_world(
 void update_world(
         void
 ) {
+        SDL_Keycode k;
+        int i = 0;
+
+        while (-1 != (k = get_key(i++))) {
+                switch (k) {
+                case SDLK_3:
+                        world.mode = MODE_3D;
+                        break;
+                case SDLK_2:
+                        world.mode = MODE_2D;
+                        break;
+                default:
+                        break;
+                }
+        }
+
         for (int w = 0; w < NODE_C; ++w) {      // Iterating over walls.
                 if (
                         world.v_held == world.walls[w].edge.x
@@ -126,12 +151,7 @@ void update_world(
 void check_mclick(
         SDL_MouseButtonEvent    m
 ) {
-        if (HOLD_NEW == world.v_held) {
-                // check if clicked on an old vertex, if so use that
-                // otherwise create new vertex
-                // link to previous
-                // remain in 'HOLD_NEW'
-        } else if (NO_HELD != world.v_held) {
+        if (NO_HELD != world.v_held) {
                 world.v_held = NO_HELD;
                 update_world();
                 return;
@@ -146,15 +166,12 @@ void check_mclick(
                         return;
                 }
         }
-
-        // create new vertex
-//        world.v_held = HOLD_NEW;
 }
 
 void check_mmove(
         SDL_MouseMotionEvent    m
 ) {
-        if (NO_HELD == world.v_held || HOLD_NEW == world.v_held) {
+        if (NO_HELD == world.v_held) {
                 return;
         }
 
@@ -162,30 +179,81 @@ void check_mmove(
         world.verts[world.v_held].y = m.y;
 }
 
-void draw_world(
-        void
+static void draw_seg_2d(
+        int             w_ind   ,
+        struct float2   seg
 ) {
-        SDL_Color use;
+        struct int2 a1, a2;
+        SDL_Color col = w_ind == world.v_held ? held_c : vis_c;
 
-        for (int w = 0; w < NODE_C; ++w) {
-                if (world.v_held == world.walls[w].edge.x
-                 || world.v_held == world.walls[w].edge.y) {
-                        use = held_c;
-                } else if (world.walls[w].ext_i > 0.f) {
-                        use = drop_c;
-                } else {
-                        use = hid_c;
-                }
+        points_on_line(
+                world.verts[world.walls[w_ind].edge.x],
+                world.verts[world.walls[w_ind].edge.y],
+                seg, &a1, &a2
+        );
 
-                rend_ln(
-                        world.verts[world.walls[w].edge.x],
-                        world.verts[world.walls[w].edge.y],
-                        use
-                );
-        }
+        rend_ln(a1, a2, col);
 }
 
-void draw_world_3d(
+static void draw_seg_3d(
+        int             w_ind   ,
+        struct float2   seg
+) {
+        struct int2 a1, a2;
+
+        points_on_line(
+                world.verts[world.walls[w_ind].edge.x],
+                world.verts[world.walls[w_ind].edge.y],
+                seg, &a1, &a2
+        );
+
+                        // Room for shortcut here?
+        float d1 = calc_dist(a1);
+        float d2 = calc_dist(a2);
+
+        float h1 = 100.f / d1;
+        float h2 = 100.f / d2;
+        
+        SDL_Vertex verts = calloc(4, sizeof(SDL_Vertex));
+
+
+        float angc;
+        float hc;
+
+        for (int v = 0; v < 4; ++v) {
+
+                if (v % 3 == 0) {
+                        angc = seg.x;
+                        hc = h1;
+                } else {
+                        angc = seg.y;
+                        hc = h2;
+                }
+
+                verts[v].position.x = ang_across_view(angc);
+
+                // Same calculation for all x-coords -> function of viewer.
+                /* (ang + -FOV/2 ) / FOV * SCREEN_W */
+
+
+                verts[v].position.y = /* line of sight */ + hc / 2.f * (v > 1 ? 1 : -1);
+                /* Need to go clockwise so first two y-coords are 
+                 *    line of sight - h / 2
+                 * then latter two are
+                 *    line of sight + h / 2
+                 * and h is h1 for first and last, h2 for second and third.
+                 */
+
+                verts[v].col = /* some kind of map from something arbitrary */
+        }
+
+        rend_gm(verts, 4);
+
+        free(verts);
+        verts = NULL;
+}
+
+void draw_world(
         void
 ) {
         float nr = 0.f;
@@ -194,8 +262,6 @@ void draw_world_3d(
         struct float2  inter;   // Extent of wall within FOV.
         struct float2 *dr_segs; // Array of segments to draw as angle pairs.
         int drc;
-
-        struct int2 a1, a2;     // Endpoints of segment to draw.
 
         for (int w = 0; w < NODE_C; ++w) {
                 world.walls[w].ckd = FALSE;
@@ -211,19 +277,20 @@ void draw_world_3d(
                 drc = get_seg(inter, &dr_segs);
 
                 for (int s = 0; s < drc; ++s) {
-                        points_on_line(
-                                world.verts[world.walls[nr_w].edge.x],
-                                world.verts[world.walls[nr_w].edge.y],
-                                dr_segs[s], &a1, &a2
-                        );
-
-                        rend_ln(a1, a2, vis_c);
+                        if (MODE_2D == world.mode) {
+                                draw_seg_2d(nr_w, dr_segs[s]);
+                        } else {
+                                draw_seg_3d(nr_w, dr_segs[s]);
+                        }
                 }
 
                 free(dr_segs);
                 dr_segs = NULL;
 
-                // Make it 3D =o
+                // Make it 3D =o  :
+                // For each wall, construct four vertices then send to
+                // `rend_gm`, needn't bother with `gm_man` really since it will
+                // all be recreated each frame =/
         }
 
         dest_occi_man();

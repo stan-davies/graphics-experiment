@@ -27,8 +27,4 @@ void draw_world(
         void
 );
 
-void draw_world_3d(
-        void
-);
-
 #endif

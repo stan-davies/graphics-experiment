@@ -88,33 +88,39 @@ void rend_ln(
                 return;
         }
 
-        #define SCALE_COL(c) (c % 125 + 125)
-
-        if (col.r == col.g && col.g == col.b && 0 == col.b) {
-                col.r = SCALE_COL(origin.x);
-                col.g = SCALE_COL(head.y);
-                col.b = SCALE_COL(origin.y + head.x);
-        }
-
         SDL_SetRenderDrawColor(rend.r, col.r, col.g, col.b, col.a);
         SDL_RenderDrawLine(rend.r, origin.x, origin.y, head.x, head.y);
 }
 
 void rend_gm(
         SDL_Vertex     *vxs     ,
-        int             vxs_n   ,
-        int            *indices ,
-        int             ind_n
+        int             vxs_n
 ) {
         if (!rend.I) {
                 return;
         }
 
-        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, indices, ind_n) != 0) {
+        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, NULL, 0) != 0) {
                 log_err("Bungled it.");
         }
                 
 }
+
+//void rend_gm_ind(
+//        SDL_Vertex     *vxs     ,
+//        int             vxs_n   ,
+//        int            *indices ,
+//        int             ind_n
+//) {
+//        if (!rend.I) {
+//                return;
+//        }
+//
+//        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, indices, ind_n) != 0) {
+//                log_err("Bungled it.");
+//        }
+//                
+//}
 
 void push_rend(
         void

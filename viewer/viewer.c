@@ -273,10 +273,6 @@ int update_viewer(
         return TRUE;
 }
 
-// The special case for dx=0 takes lambda = mu, i.e. the distance
-// (proportionally) along the wall is the same as the distance along the FOV
-// line to the wall.
-// Note really sure why that works lol.
 void points_on_line(
         struct int2     p1      ,
         struct int2     p2      ,
@@ -293,9 +289,6 @@ void points_on_line(
         adj_ang(&exts.x, viewer.view);
         adj_ang(&exts.y, viewer.view);
 
-        // Trying to patch up an annoying bug when perfectly aligned to a
-        // vertex of a horizontal wall.
-        // Does not work yet =(
         if (p2.x == v.x || p1.x == v.x) {
                 v.x += 1.f;
         }

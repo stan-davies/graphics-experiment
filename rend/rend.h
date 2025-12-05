@@ -42,10 +42,15 @@ void rend_ln(
 
 void rend_gm(
         SDL_Vertex     *vxs     ,
-        int             vxs_n   ,
-        int            *indices ,
-        int             ind_n
+        int             vxs_n
 );
+
+//void rend_gm_ind(
+//        SDL_Vertex     *vxs     ,
+//        int             vxs_n   ,
+//        int            *indices ,
+//        int             ind_n
+//);
 
 void push_rend(
         void
