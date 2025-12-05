@@ -6,8 +6,13 @@
 #include "key_man/key_man.h"
 
 #define PI              3.141598f
+
 #define FOV             PI / 2.f
 #define HFOV            FOV / 2.f
+
+#define LOS             SCREEN_H / 2.f          // Line of sight, i.e.
+                                                // screenspace y-coord to put
+                                                // centre of walls at.
 #define NOT_VIS         -8.f
 
 #define MOVE_BY         5
@@ -75,6 +80,12 @@ struct int2 rel_p(
         };
 
         return p;
+}
+
+float get_los(
+        void
+) {
+        return LOS;
 }
 
 static void set_draw(
@@ -208,6 +219,17 @@ float calc_dist(
         };
 
         return sqrt(dif.x * dif.x + dif.y + dif.y);
+}
+
+float ang_across_view(
+        float           ang
+) {
+        float t = (ang + HFOV) / FOV * 4.f;
+        log_msg("(%f + %f) / %f = %f / %f = %f", 
+                ang, HFOV, FOV, 
+                ang + HFOV, FOV, 
+                t);
+        return t;
 }
 
 int spans_fov(

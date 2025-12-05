@@ -13,6 +13,10 @@ struct int2 rel_p(
         float           t
 );
 
+float get_los(
+        void
+);
+
 int vx_in_view(
         struct int2     v1      ,
         struct int2     v2
@@ -33,6 +37,10 @@ float calc_nrst(
 
 float calc_dist(
         struct int2     v
+);
+
+float ang_across_view(          // [-FOV/2, FOV/2] -> [0, 1]
+        float           ang
 );
 
 int spans_fov(

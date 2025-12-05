@@ -3,6 +3,7 @@
 #include "viewer/viewer.h"
 #include "rend/rend.h"
 #include "occi_man/occi_man.h"
+#include "key_man/key_man.h"
 
 #define NODE_C          8
 
@@ -43,6 +44,8 @@ static struct {
 
         int             v_held  ;
         int             mode    ;
+
+        int            *index_a ;       // Used for indexing vertices in render.
 } world;
 
 static SDL_Color vis_c  = { 30, 240, 45, 255 };
@@ -54,7 +57,8 @@ static void draw_seg_2d(
 );
 
 static void draw_seg_3d(
-        void
+        int             w_ind   ,
+        struct float2   seg
 );
 
 static int find_nr_w(
@@ -68,6 +72,12 @@ void init_world(
         world.walls = calloc(NODE_C, sizeof(struct wall));
 
         world.v_held = NO_HELD;
+        world.mode = MODE_3D;
+
+        world.index_a = calloc(6, sizeof(int));
+        for (int i = 0; i < 6; ++i) {
+                world.index_a[i] = i <= 3 ? i : i % 2 * 2;
+        }
 
         for (int i = 0; i < NODE_C / 2; ++i) {
                 world.verts[i].x = (0 == i || 3 == i) ? 100 : SCREEN_W - 100;
@@ -87,12 +97,15 @@ void init_world(
                 world.walls[i].edge.y = (ofi + 1) % 4 + 4;
         }
 
-        update_world();
+        recalc_world();
 }
 
 void dest_world(
         void
 ) {
+        free(world.index_a);
+        world.index_a = NULL;
+
         free(world.verts);
         world.verts = NULL;
 
@@ -118,7 +131,11 @@ void update_world(
                         break;
                 }
         }
+}
 
+void recalc_world(
+        void
+) {
         for (int w = 0; w < NODE_C; ++w) {      // Iterating over walls.
                 if (
                         world.v_held == world.walls[w].edge.x
@@ -208,20 +225,21 @@ static void draw_seg_3d(
         );
 
                         // Room for shortcut here?
-        float d1 = calc_dist(a1);
-        float d2 = calc_dist(a2);
+        float h1 = SCREEN_H / calc_dist(a1) * 100.f;
+        float h2 = SCREEN_H / calc_dist(a2) * 100.f;
 
-        float h1 = 100.f / d1;
-        float h2 = 100.f / d2;
-        
-        SDL_Vertex verts = calloc(4, sizeof(SDL_Vertex));
-
-
+        SDL_Vertex *verts = calloc(4, sizeof(SDL_Vertex));
         float angc;
         float hc;
 
-        for (int v = 0; v < 4; ++v) {
+        SDL_Color col = {
+                world.verts[world.walls[w_ind].edge.x].x % 140 + 100,
+                world.verts[world.walls[w_ind].edge.y].y % 140 + 100,
+                (int)(w_ind) % 140 + 100,
+                255
+        };
 
+        for (int v = 0; v < 4; ++v) {
                 if (v % 3 == 0) {
                         angc = seg.x;
                         hc = h1;
@@ -230,24 +248,13 @@ static void draw_seg_3d(
                         hc = h2;
                 }
 
-                verts[v].position.x = ang_across_view(angc);
+                verts[v].position.x = ang_across_view(angc) * SCREEN_W;
+                verts[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
 
-                // Same calculation for all x-coords -> function of viewer.
-                /* (ang + -FOV/2 ) / FOV * SCREEN_W */
-
-
-                verts[v].position.y = /* line of sight */ + hc / 2.f * (v > 1 ? 1 : -1);
-                /* Need to go clockwise so first two y-coords are 
-                 *    line of sight - h / 2
-                 * then latter two are
-                 *    line of sight + h / 2
-                 * and h is h1 for first and last, h2 for second and third.
-                 */
-
-                verts[v].col = /* some kind of map from something arbitrary */
+                verts[v].color = col;
         }
 
-        rend_gm(verts, 4);
+        rend_gm(verts, 4, world.index_a, 6);
 
         free(verts);
         verts = NULL;

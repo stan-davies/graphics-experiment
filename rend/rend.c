@@ -94,33 +94,19 @@ void rend_ln(
 
 void rend_gm(
         SDL_Vertex     *vxs     ,
-        int             vxs_n
+        int             vxs_n   ,
+        int            *indices ,
+        int             ind_n
 ) {
         if (!rend.I) {
                 return;
         }
 
-        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, NULL, 0) != 0) {
+        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, indices, ind_n) != 0) {
                 log_err("Bungled it.");
         }
                 
 }
-
-//void rend_gm_ind(
-//        SDL_Vertex     *vxs     ,
-//        int             vxs_n   ,
-//        int            *indices ,
-//        int             ind_n
-//) {
-//        if (!rend.I) {
-//                return;
-//        }
-//
-//        if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, indices, ind_n) != 0) {
-//                log_err("Bungled it.");
-//        }
-//                
-//}
 
 void push_rend(
         void

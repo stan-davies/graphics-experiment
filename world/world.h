@@ -11,6 +11,10 @@ void dest_world(
         void
 );
 
+void recalc_world(
+        void
+);
+
 void update_world(
         void
 );

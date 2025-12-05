@@ -43,12 +43,14 @@ void loop(
                         }
                 }
 
+                update_world();
+
                 if (update_viewer()) {
-                        update_world();
+                        recalc_world();
                 }
 
                 draw_world();
-                draw_viewer();
+//                draw_viewer();
 
                 push_rend();
         }

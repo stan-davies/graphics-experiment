@@ -2,7 +2,6 @@
 
 #include "sdl_util/sdl_util.h"
 #include "rend/rend.h"
-#include "gm_man/gm_man.h"
 #include "viewer/viewer.h"
 #include "world/world.h"
 #include "key_man/key_man.h"
@@ -30,8 +29,6 @@ int init(
         SDL_Color clr = { 0, 0, 0, 255 };
         set_rendcl(clr);
 
-        init_gm_man();
-
         // Where to define these things?
         struct int2 vpos = { SCREEN_W / 2, SCREEN_H / 2 };
         init_viewer(vpos, 3.141598f);
@@ -51,7 +48,6 @@ void end(
 ) {
         dest_key_man();
         dest_world();
-        dest_gm_man();
         end_sdl(&win);
 
         log_msg("Program ended without error.");

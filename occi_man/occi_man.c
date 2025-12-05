@@ -127,7 +127,6 @@ static void clean_occi(
 
                         if (ang_in_int(occi_man.occis[i].x, c_int) 
                          || ang_in_int(occi_man.occis[i].y, c_int)) {
-                                log_msg("crunch");
                                 occi_man.occis[i].x = MAX(occi_man.occis[i].x, c_int.x);
                                 occi_man.occis[i].y = MIN(occi_man.occis[i].y, c_int.y);
 

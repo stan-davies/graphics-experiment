@@ -13,7 +13,7 @@
 
 - So for now,
 + Iron out bugs in the segment splitting, including that occasional segfault.
-+ Introduce proper 3D rendering of shapes.
++ On above point, 2D renderer sometimes segfaults on startup for some reason.
 + Make viewer emit light, so vertex distance is mapped onto brightness.
 
 - Possible extensions:
