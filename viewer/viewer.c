@@ -273,10 +273,10 @@ int update_viewer(
                         viewer.pos = rel_p(MOVE_BY, PI / -2.f);
                         break;
                 case SDLK_e:
-                        adj_ang(&viewer.view, ROTATE_BY);
+                        adj_ang(&viewer.view, -ROTATE_BY);
                         break;
                 case SDLK_q:
-                        adj_ang(&viewer.view, -ROTATE_BY);
+                        adj_ang(&viewer.view,  ROTATE_BY);
                         break;
                 default:
                         return FALSE;

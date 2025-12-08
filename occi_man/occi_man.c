@@ -30,8 +30,9 @@ static inline int int_in_int(
         struct float2   outer
 );
 
-static void clean_occi(
-        void
+static void add_occis(
+        struct float2  *segs    ,
+        int             segc
 );
 
 void init_occi_man(
@@ -75,9 +76,6 @@ int get_seg(                            // Returns whether or not the wall was
 
         (*segs)[segc++] = wall;
 
-        return segc;
-
-/*
         for (int i = 0; i < occi_man.intc; ++i) {
                 for (int s = 0; s < segc; ++s) {
                         if (ang_in_int((*segs)[s].x, occi_man.occis[i])) {
@@ -110,39 +108,35 @@ int get_seg(                            // Returns whether or not the wall was
                 }
         }
 
-// Surely not the best way to do this since there is almost definitely overlap.
-        for (int s = 0; s < segc; ++s) {
-                occi_man.occis[occi_man.intc++] = (*segs)[s];
-                if (occi_man.intc >= MAX_INTS) {
-                        log_err("Maximum intervals reached... oh well!");
-                }
-        }
-
-        clean_occi();
+        add_occis(*segs, segc);
 
         return segc;
-*/
 }
 
-static void clean_occi(
-        void
+static void add_occis(
+        struct float2  *segs    ,
+        int             segc
 ) {
         struct float2 c_int;
-        for (int i = 0; i < occi_man.intc; ++i) {
-                for (int j = 0; j < occi_man.intc; ++j) {
-                        if (i == j) {
+        int added = FALSE;
+        for (int s = 0; s < segc; ++s) {
+                for (int i = 0; i < occi_man.intc; ++i) {
+                        c_int = occi_man.occis[i];
+
+                        if (ang_in_int(segs[s].x, c_int) 
+                         || ang_in_int(segs[s].y, c_int)) {
+                                occi_man.occis[i].x = MAX(segs[s].x, c_int.x);
+                                occi_man.occis[i].y = MIN(segs[s].y, c_int.y);
+                                added = TRUE;
+                        }
+                }
+
+                if (!added) {
+                        if (MAX_INTS == occi_man.intc) {
+                                log_err("Too many intervals!");
                                 continue;
                         }
-
-                        c_int = occi_man.occis[j];
-
-                        if (ang_in_int(occi_man.occis[i].x, c_int) 
-                         || ang_in_int(occi_man.occis[i].y, c_int)) {
-                                occi_man.occis[i].x = MAX(occi_man.occis[i].x, c_int.x);
-                                occi_man.occis[i].y = MIN(occi_man.occis[i].y, c_int.y);
-
-                                occi_man.occis[j] = occi_man.occis[--occi_man.intc];
-                        }
+                        occi_man.occis[occi_man.intc++] = segs[s];
                 }
         }
 }
