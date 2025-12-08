@@ -3,13 +3,12 @@
 #include <stdlib.h>
 
 #include "util/util.h"
+#include "viewer/viewer.h"
 
 #define MAX_INTS        16
 
 #define MIN(a, b) (a < b ? a : b)
 #define MAX(a, b) (a > b ? a : b)
-
-#define RAD_TO_DEG(t) (t * 180.f / 3.141598f)
 
 static struct {
         struct float2  *occis   ;       // Occupied intervals.
@@ -42,6 +41,12 @@ void init_occi_man(
         occi_man.intc  = 0;
 }
 
+void ready_occi_man(
+        void
+) {
+        occi_man.intc = 0;
+}
+
 void dest_occi_man(
         void
 ) {
@@ -49,11 +54,12 @@ void dest_occi_man(
         occi_man.occis = NULL;
 }
 
-///* closed */
-//                // No idea if this works properly.
-//                if (spans_fov(occ_int[0])) {
-//                        break;
-//                }
+int occi_close(
+        void
+) {
+        // No idea if this works properly.
+        return spans_fov(occi_man.occis[0]);
+}
 
 int get_seg(                            // Returns whether or not the wall was
                                         // split into multiple, discontinuous,
@@ -63,11 +69,15 @@ int get_seg(                            // Returns whether or not the wall was
         struct float2   wall    ,       // Interval within FOV
         struct float2 **segs            // Visible segments to draw.
 ) {
-        *segs = calloc(8, sizeof(struct float2));       // Freed by caller (I hope...)
-        int segc = OCCI_WHID;
+                                // Freed by caller (I hope...)
+        *segs = calloc(8, sizeof(struct float2));
+        int segc = 0;
 
         (*segs)[segc++] = wall;
 
+        return segc;
+
+/*
         for (int i = 0; i < occi_man.intc; ++i) {
                 for (int s = 0; s < segc; ++s) {
                         if (ang_in_int((*segs)[s].x, occi_man.occis[i])) {
@@ -111,6 +121,7 @@ int get_seg(                            // Returns whether or not the wall was
         clean_occi();
 
         return segc;
+*/
 }
 
 static void clean_occi(

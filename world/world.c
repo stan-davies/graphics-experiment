@@ -98,11 +98,15 @@ void init_world(
         }
 
         recalc_world();
+
+        init_occi_man();
 }
 
 void dest_world(
         void
 ) {
+        dest_occi_man();
+
         free(world.index_a);
         world.index_a = NULL;
 
@@ -224,18 +228,17 @@ static void draw_seg_3d(
                 seg, &a1, &a2
         );
 
-                        // Room for shortcut here?
-        float h1 = SCREEN_H / calc_dist(a1) * 100.f;
-        float h2 = SCREEN_H / calc_dist(a2) * 100.f;
+        float h1 = 100.f + SCREEN_H / calc_dist(a1) * 30.f;
+        float h2 = 100.f + SCREEN_H / calc_dist(a2) * 30.f;
 
         SDL_Vertex *verts = calloc(4, sizeof(SDL_Vertex));
         float angc;
         float hc;
 
         SDL_Color col = {
-                world.verts[world.walls[w_ind].edge.x].x % 140 + 100,
-                world.verts[world.walls[w_ind].edge.y].y % 140 + 100,
-                (int)(w_ind) % 140 + 100,
+                world.verts[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
+                world.verts[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
+                (int)(w_ind) * 11 % 140 + 100,
                 255
         };
 
@@ -248,7 +251,7 @@ static void draw_seg_3d(
                         hc = h2;
                 }
 
-                verts[v].position.x = ang_across_view(angc) * SCREEN_W;
+                verts[v].position.x = l_on_vl(angc) * SCREEN_W;
                 verts[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
 
                 verts[v].color = col;
@@ -274,10 +277,9 @@ void draw_world(
                 world.walls[w].ckd = FALSE;
         }
 
-        init_occi_man();
+        ready_occi_man();
 
         while (-1 != (nr_w = find_nr_w(&nr))) {
-
                 inter.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
                 inter.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
 
@@ -293,14 +295,7 @@ void draw_world(
 
                 free(dr_segs);
                 dr_segs = NULL;
-
-                // Make it 3D =o  :
-                // For each wall, construct four vertices then send to
-                // `rend_gm`, needn't bother with `gm_man` really since it will
-                // all be recreated each frame =/
         }
-
-        dest_occi_man();
 }
 
 static int find_nr_w(

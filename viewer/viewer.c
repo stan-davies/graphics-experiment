@@ -9,6 +9,7 @@
 
 #define FOV             PI / 2.f
 #define HFOV            FOV / 2.f
+#define FOCAL_L         50.f
 
 #define LOS             SCREEN_H / 2.f          // Line of sight, i.e.
                                                 // screenspace y-coord to put
@@ -75,6 +76,20 @@ struct int2 rel_p(
         adj_ang(&t, viewer.view);
 
         struct int2 p = {
+                .x = viewer.pos.x + r * cosf(t),
+                .y = viewer.pos.y - r * sinf(t)
+        };
+
+        return p;
+}
+
+struct float2 rel_pf(
+        float           r       ,
+        float           t
+) {
+        adj_ang(&t, viewer.view);
+
+        struct float2 p = {
                 .x = viewer.pos.x + r * cosf(t),
                 .y = viewer.pos.y - r * sinf(t)
         };
@@ -221,17 +236,6 @@ float calc_dist(
         return sqrt(dif.x * dif.x + dif.y + dif.y);
 }
 
-float ang_across_view(
-        float           ang
-) {
-        float t = (ang + HFOV) / FOV * 4.f;
-        log_msg("(%f + %f) / %f = %f / %f = %f", 
-                ang, HFOV, FOV, 
-                ang + HFOV, FOV, 
-                t);
-        return t;
-}
-
 int spans_fov(
         struct float2   interval
 ) {
@@ -257,30 +261,22 @@ int update_viewer(
         while (-1 != (k = get_key(i++))) {
                 switch (k) {
                 case SDLK_w:
-                        if (viewer.pos.y > MOVE_BY) {
-                                viewer.pos.y -= MOVE_BY;
-                        }
+                        viewer.pos = rel_p(MOVE_BY, 0.f);
                         break;
                 case SDLK_s:
-                        if (viewer.pos.y < SCREEN_H - MOVE_BY) {
-                                viewer.pos.y += MOVE_BY;
-                        }
+                        viewer.pos = rel_p(MOVE_BY, PI);
                         break;
                 case SDLK_a:
-                        if (viewer.pos.x > MOVE_BY) {
-                                viewer.pos.x -= MOVE_BY;
-                        }
+                        viewer.pos = rel_p(MOVE_BY, PI / 2.f);
                         break;
                 case SDLK_d:
-                        if (viewer.pos.x < SCREEN_W - MOVE_BY) {
-                                viewer.pos.x += MOVE_BY;
-                        }
+                        viewer.pos = rel_p(MOVE_BY, PI / -2.f);
                         break;
                 case SDLK_e:
-                        adj_ang(&viewer.view, -ROTATE_BY);
+                        adj_ang(&viewer.view, ROTATE_BY);
                         break;
                 case SDLK_q:
-                        adj_ang(&viewer.view, ROTATE_BY);
+                        adj_ang(&viewer.view, -ROTATE_BY);
                         break;
                 default:
                         return FALSE;
@@ -319,7 +315,9 @@ void points_on_line(
         // For a1:
         if (0.f == p2.x - p1.x) {
                 num = p1.x - v.x;
-                den = cosf(exts.x) - p2.x + p1.x;
+                den = cosf(exts.x);
+//                num = v.y - p1.y - (float)(fabsf(exts.x) < HFOV) * tanf(exts.x) * (p1.x - v.x);
+//                den = abs(p1.y - p2.y);
         } else {
                 num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
                 den = sinf(exts.x) + cosf(exts.x) * (p2.y - p1.y) / (p2.x - p1.x);
@@ -331,10 +329,12 @@ void points_on_line(
         a1->y = v.y - lambda * sinf(exts.x);
 
 
-        // for a2:
+        // For a2:
         if (0.f == p2.x - p1.x) {
                 num = p1.x - v.x;
-                den = cosf(exts.y) - p2.x + p1.x;
+                den = cosf(exts.y);
+//                num = v.y - p1.y - (float)(fabsf(exts.y) < HFOV) * tanf(exts.y) * (p1.x - v.x);
+//                den = abs(p1.y - p2.y);
         } else {
                 num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
                 den = sinf(exts.y) + cosf(exts.y) * (p2.y - p1.y) / (p2.x - p1.x);
@@ -344,4 +344,30 @@ void points_on_line(
 
         a2->x = v.x + lambda * cosf(exts.y);
         a2->y = v.y - lambda * sinf(exts.y);
+}
+
+// Special case of above function for intersection between a view ray and the
+// view line (line through centre of view plane).
+float l_on_vl(
+        float           ang
+) {
+        struct float2 v = {
+                (float)viewer.pos.x,
+                (float)viewer.pos.y
+        };
+        struct float2 p1 = rel_pf(FOCAL_L, -HFOV);
+        struct float2 p2 = rel_pf(FOCAL_L,  HFOV);
+        float num, den;
+
+        adj_ang(&ang, viewer.view);
+
+        if (0.f == p2.x - p1.x) {
+                num = v.y - p1.y - (float)(fabsf(ang) < HFOV) * tanf(ang) * (p1.x - v.x);
+                den = fabsf(p1.y - p2.y);
+        } else {
+                num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
+                den = sinf(ang) + cosf(ang) * (p2.y - p1.y) / (p2.x - p1.x);
+        }
+
+        return num / den;
 }

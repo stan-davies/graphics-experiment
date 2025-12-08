@@ -10,7 +10,12 @@ void init_viewer(
 
 struct int2 rel_p(
         float           r       ,
-        float           t
+        float           t               // Assumes angle not relative to viewer.
+);
+
+struct float2 rel_pf(
+        float           r       ,
+        float           t               // Assumes angle not relative to viewer.
 );
 
 float get_los(
@@ -39,10 +44,6 @@ float calc_dist(
         struct int2     v
 );
 
-float ang_across_view(          // [-FOV/2, FOV/2] -> [0, 1]
-        float           ang
-);
-
 int spans_fov(
         struct float2   interval
 );
@@ -62,6 +63,10 @@ void points_on_line(
         struct float2   exts    ,
         struct int2    *a1      ,
         struct int2    *a2
+);
+
+float l_on_vl(
+        float           ang
 );
 
 #endif
