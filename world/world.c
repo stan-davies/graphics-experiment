@@ -259,6 +259,8 @@ static void draw_seg_3d(
 
         rend_gm(verts, 4, world.index_a, 6);
 
+        log_msg("");
+
         free(verts);
         verts = NULL;
 }
@@ -270,7 +272,8 @@ void draw_world(
         int nr_w;
 
         struct float2  inter;   // Extent of wall within FOV.
-        struct float2 *dr_segs; // Array of segments to draw as angle pairs.
+                        // Array of segments to draw as angle pairs.
+        struct float2 *dr_segs;
         int drc;
 
         for (int w = 0; w < NODE_C; ++w) {
@@ -280,8 +283,13 @@ void draw_world(
         ready_occi_man();
 
         while (-1 != (nr_w = find_nr_w(&nr))) {
-                inter.x = MAX(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
-                inter.y = MIN(world.walls[nr_w].extent.x, world.walls[nr_w].extent.y);
+                if (world.walls[nr_w].extent.x < world.walls[nr_w].extent.y) {
+                        inter.x = world.walls[nr_w].extent.y;
+                        inter.y = world.walls[nr_w].extent.x;
+                } else {
+                        inter.x = world.walls[nr_w].extent.x;
+                        inter.y = world.walls[nr_w].extent.y;
+                }
 
                 drc = get_seg(inter, &dr_segs);
 
@@ -296,6 +304,8 @@ void draw_world(
                 free(dr_segs);
                 dr_segs = NULL;
         }
+
+        log_msg("\n");
 }
 
 static int find_nr_w(

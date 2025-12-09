@@ -361,13 +361,9 @@ float l_on_vl(
 
         adj_ang(&ang, viewer.view);
 
-        if (0.f == p2.x - p1.x) {
-                num = v.y - p1.y - (float)(fabsf(ang) < HFOV) * tanf(ang) * (p1.x - v.x);
-                den = fabsf(p1.y - p2.y);
-        } else {
-                num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
-                den = sinf(ang) + cosf(ang) * (p2.y - p1.y) / (p2.x - p1.x);
-        }
+        num = v.y - p1.y - tanf(ang) * (p1.x - v.x);
+        den = p2.y - p1.y - tanf(ang) * (p2.x - p1.x);
 
+        log_msg("%f / %f = %f", num, den, num / den);
         return num / den;
 }
