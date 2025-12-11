@@ -23,3 +23,8 @@ output can just be kind of prebaked though, so long as the lights don't move.
 º Randomly generating maze.
 º Collision detection.
 º Texturing.
+
+
+- So perplexed by that segfault, seems to sometimes be something to do with
+  `SDL_Event` stuff, which is only from key checking, and othertimes from
+  within pushing the rendered stuff so possibly bad data or something?

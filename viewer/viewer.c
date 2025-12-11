@@ -279,6 +279,7 @@ int update_viewer(
                         adj_ang(&viewer.view,  ROTATE_BY);
                         break;
                 default:
+                        // Is this the best thing to do here?
                         return FALSE;
                 }
         }
@@ -316,8 +317,6 @@ void points_on_line(
         if (0.f == p2.x - p1.x) {
                 num = p1.x - v.x;
                 den = cosf(exts.x);
-//                num = v.y - p1.y - (float)(fabsf(exts.x) < HFOV) * tanf(exts.x) * (p1.x - v.x);
-//                den = abs(p1.y - p2.y);
         } else {
                 num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
                 den = sinf(exts.x) + cosf(exts.x) * (p2.y - p1.y) / (p2.x - p1.x);
@@ -333,8 +332,6 @@ void points_on_line(
         if (0.f == p2.x - p1.x) {
                 num = p1.x - v.x;
                 den = cosf(exts.y);
-//                num = v.y - p1.y - (float)(fabsf(exts.y) < HFOV) * tanf(exts.y) * (p1.x - v.x);
-//                den = abs(p1.y - p2.y);
         } else {
                 num = v.y - p1.y - (v.x - p1.x) * (p2.y - p1.y) / (p2.x - p1.x);
                 den = sinf(exts.y) + cosf(exts.y) * (p2.y - p1.y) / (p2.x - p1.x);
@@ -342,6 +339,7 @@ void points_on_line(
 
         lambda = num / den;
 
+// Calculate other coefficient instead and use equation p1 + c (p2 - p1)
         a2->x = v.x + lambda * cosf(exts.y);
         a2->y = v.y - lambda * sinf(exts.y);
 }
@@ -355,15 +353,15 @@ float l_on_vl(
                 (float)viewer.pos.x,
                 (float)viewer.pos.y
         };
-        struct float2 p1 = rel_pf(FOCAL_L, -HFOV);
-        struct float2 p2 = rel_pf(FOCAL_L,  HFOV);
+        struct float2 p1 = rel_pf(FOCAL_L,  HFOV);      // Right way around?
+        struct float2 p2 = rel_pf(FOCAL_L, -HFOV);
         float num, den;
 
         adj_ang(&ang, viewer.view);
+        float tana = tanf(ang);
 
-        num = v.y - p1.y - tanf(ang) * (p1.x - v.x);
-        den = p2.y - p1.y - tanf(ang) * (p2.x - p1.x);
+        num = v.y - p1.y - tana * (p1.x - v.x);
+        den = p2.y - p1.y + tana * (p2.x - p1.x);
 
-        log_msg("%f / %f = %f", num, den, num / den);
         return num / den;
 }

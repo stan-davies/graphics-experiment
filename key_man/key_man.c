@@ -26,7 +26,7 @@ void k_down(
 ) {
         for (int i = 0; i < key_man.num_d; ++i) {
                 if (k == key_man.keys[i]) {
-                        return;
+                        return;                         // Already down.
                 }
         }
 
@@ -58,4 +58,3 @@ SDL_Keycode get_key(
 
         return key_man.keys[i];
 }
-        
