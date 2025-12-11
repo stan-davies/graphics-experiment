@@ -233,7 +233,7 @@ float calc_dist(
                 .y = v.y - viewer.pos.y
         };
 
-        return sqrt(dif.x * dif.x + dif.y + dif.y);
+        return sqrt(dif.x * dif.x + dif.y * dif.y);
 }
 
 int spans_fov(
