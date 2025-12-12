@@ -4,6 +4,8 @@
 
 #include "rend/rend.h"
 #include "key_man/key_man.h"
+#include "util/vecs/vecs.h"
+#include "world/world.h"
 
 #define PI              3.141598f
 
@@ -186,39 +188,23 @@ void calc_ext(
         *i_e = MAX(0.f, DIF(extent->x, extent->y) - 0.05f);
 }
 
-float calc_nrst(
+float rel_dist_pt(
+        struct int2     p
+) {
+        struct float2 pf = { (float)p.x, (float)p.y };
+        return dist_to_pt(pf, viewer.pos);
+
+}
+
+float rel_dist_ln(
         struct int2     v1      ,
         struct int2     v2
 ) {
-        float lambda = (float)((v1.y - viewer.pos.y) * (v2.y - v1.y)
-                      - (v1.x - viewer.pos.x) * (v2.x - v1.x))
-                     / (float)((v2.x - v1.x) * (v2.x - v1.x)
-                      + (v2.y - v1.y) * (v2.y - v1.y));
-
-        if (lambda < 0.f || lambda > 1.f) {
-                float d1 = calc_dist(v1);
-                float d2 = calc_dist(v2);
-                return MIN(d1, d2);
-        }
-
-        struct int2 np = {
-                .x = v1.x + lambda * (v2.x - v1.x),
-                .y = v1.y + lambda * (v2.y - v1.y)
-        };
-
-        return calc_dist(np);
+        struct float2 v1f = { (float)v1.x, (float)v1.y };
+        struct float2 v2f = { (float)v2.x, (float)v2.y };
+        return dist_to_ln(v1f, v2f, viewer.pos);
 }
 
-float calc_dist(
-        struct int2     v
-) {
-        struct int2 dif = {
-                .x = v.x - viewer.pos.x,
-                .y = v.y - viewer.pos.y
-        };
-
-        return sqrt(dif.x * dif.x + dif.y * dif.y);
-}
 
 int spans_fov(
         struct float2   interval
@@ -243,19 +229,21 @@ int update_viewer(
         SDL_Keycode k;
         int i = 0;
 
+        struct float2 newp = viewer.pos;
+
         while (-1 != (k = get_key(i++))) {
                 switch (k) {
                 case SDLK_w:
-                        viewer.pos = rel_p(MOVE_BY, 0.f);
+                        newp = rel_p(MOVE_BY, 0.f);
                         break;
                 case SDLK_s:
-                        viewer.pos = rel_p(MOVE_BY, PI);
+                        newp = rel_p(MOVE_BY, PI);
                         break;
                 case SDLK_a:
-                        viewer.pos = rel_p(MOVE_BY, PI / 2.f);
+                        newp = rel_p(MOVE_BY, PI / 2.f);
                         break;
                 case SDLK_d:
-                        viewer.pos = rel_p(MOVE_BY, PI / -2.f);
+                        newp = rel_p(MOVE_BY, PI / -2.f);
                         break;
                 case SDLK_e:
                         adj_ang(&viewer.view, -ROTATE_BY);
@@ -271,6 +259,10 @@ int update_viewer(
 
         if (1 == i) {           // Indicates no keys were pressed.
                 return FALSE;
+        }
+
+        if (rq_move(newp)) {
+                viewer.pos = newp;
         }
 
         set_draw();

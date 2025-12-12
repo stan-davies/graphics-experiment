@@ -14,7 +14,7 @@
 - So for now,
 + Iron out bugs in the segment splitting, including that occasional segfault.
 + Iron out the issues in view detection.
-+ Motion doesn't work quite right, also add collision detection.
++ Make collision detection work consistently.
 + Make viewer emit light, so vertex distance is mapped onto brightness.
 
 - Possible extensions:
@@ -22,7 +22,6 @@
 º Reuse all the viewer code for fancy lights which essentially raycast. All the
 output can just be kind of prebaked though, so long as the lights don't move.
 º Randomly generating maze.
-º Collision detection.
 º Texturing.
 
 

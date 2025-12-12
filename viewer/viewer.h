@@ -30,13 +30,13 @@ void calc_ext(
         float          *i_e             // Inbetween extent.
 );
 
-float calc_nrst(
-        struct int2     v1      ,
-        struct int2     v2
+float rel_dist_pt(
+        struct int2     v
 );
 
-float calc_dist(
-        struct int2     v
+float rel_dist_ln(
+        struct int2     v1      ,
+        struct int2     v2
 );
 
 int spans_fov(

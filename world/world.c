@@ -4,6 +4,7 @@
 #include "rend/rend.h"
 #include "occi_man/occi_man.h"
 #include "key_man/key_man.h"
+#include "util/vecs/vecs.h"
 
 #define NODE_C          8
 
@@ -36,7 +37,7 @@ struct wall {
 };
 
 static struct {
-        struct int2    *verts   ;
+        struct int2    *edges   ;
 
         struct wall    *walls   ;
 
@@ -66,7 +67,7 @@ static int find_nr_w(
 void init_world(
         void
 ) {
-        world.verts = calloc(NODE_C, sizeof(struct int2));
+        world.edges = calloc(NODE_C, sizeof(struct int2));
         world.walls = calloc(NODE_C, sizeof(struct wall));
 
         world.v_held = NO_HELD;
@@ -78,8 +79,8 @@ void init_world(
         }
 
         for (int i = 0; i < NODE_C / 2; ++i) {
-                world.verts[i].x = (0 == i || 3 == i) ? 100 : SCREEN_W - 100;
-                world.verts[i].y = (i >= 2) ? SCREEN_H - 100 : 100;
+                world.edges[i].x = (0 == i || 3 == i) ? 100 : SCREEN_W - 100;
+                world.edges[i].y = (i >= 2) ? SCREEN_H - 100 : 100;
 
                 world.walls[i].edge.x = i;
                 world.walls[i].edge.y = (i + 1) % 4;
@@ -88,8 +89,8 @@ void init_world(
         int ofi;
         for (int i = NODE_C / 2; i < NODE_C; ++i) {
                 ofi = i % (NODE_C / 2);
-                world.verts[i].x = (0 == ofi || 3 == ofi) ? 400 : 500;
-                world.verts[i].y = (ofi >= 2) ? 300 : 200;
+                world.edges[i].x = (0 == ofi || 3 == ofi) ? 400 : 500;
+                world.edges[i].y = (ofi >= 2) ? 300 : 200;
 
                 world.walls[i].edge.x = ofi + 4;
                 world.walls[i].edge.y = (ofi + 1) % 4 + 4;
@@ -108,8 +109,8 @@ void dest_world(
         free(world.index_a);
         world.index_a = NULL;
 
-        free(world.verts);
-        world.verts = NULL;
+        free(world.edges);
+        world.edges = NULL;
 
         free(world.walls);
         world.walls = NULL;
@@ -144,8 +145,8 @@ void recalc_world(
                      || world.v_held == world.walls[w].edge.y
                      || (       0.f == world.walls[w].ext_i
                              && !vx_in_view(
-                                        world.verts[world.walls[w].edge.x],
-                                        world.verts[world.walls[w].edge.y]
+                                        world.edges[world.walls[w].edge.x],
+                                        world.edges[world.walls[w].edge.y]
                                 )
                         )
                 ) {
@@ -153,16 +154,16 @@ void recalc_world(
                 }
 
                 calc_ext(
-                        world.verts[world.walls[w].edge.x],
-                        world.verts[world.walls[w].edge.y],
+                        world.edges[world.walls[w].edge.x],
+                        world.edges[world.walls[w].edge.y],
                         &world.walls[w].extent,
                         &world.walls[w].angs,
                         &world.walls[w].ext_i
                 );
 
-                world.walls[w].dist = calc_nrst(
-                        world.verts[world.walls[w].edge.x],
-                        world.verts[world.walls[w].edge.y]
+                world.walls[w].dist = rel_dist_ln(
+                        world.edges[world.walls[w].edge.x],
+                        world.edges[world.walls[w].edge.y]
                 );
         }
 }
@@ -178,7 +179,7 @@ void check_mclick(
 
         struct int2 v;
         for (int i = 0; i < NODE_C; ++i) {
-                v = world.verts[i];
+                v = world.edges[i];
                 if (v.x - 10 < m.x && v.x + 10 > m.x
                  && v.y - 10 < m.y && v.y + 10 > m.y) {
                         world.v_held = i;
@@ -194,8 +195,8 @@ void check_mmove(
                 return;
         }
 
-        world.verts[world.v_held].x = m.x;
-        world.verts[world.v_held].y = m.y;
+        world.edges[world.v_held].x = m.x;
+        world.edges[world.v_held].y = m.y;
 }
 
 static void draw_seg_2d(
@@ -206,8 +207,8 @@ static void draw_seg_2d(
         SDL_Color col = w_ind == world.v_held ? held_c : vis_c;
 
         points_on_line(
-                world.verts[world.walls[w_ind].edge.x],
-                world.verts[world.walls[w_ind].edge.y],
+                world.edges[world.walls[w_ind].edge.x],
+                world.edges[world.walls[w_ind].edge.y],
                 seg, &a1, &a2
         );
 
@@ -221,22 +222,22 @@ static void draw_seg_3d(
         struct int2 a1, a2;
 
         points_on_line(
-                world.verts[world.walls[w_ind].edge.x],
-                world.verts[world.walls[w_ind].edge.y],
+                world.edges[world.walls[w_ind].edge.x],
+                world.edges[world.walls[w_ind].edge.y],
                 seg, &a1, &a2
         );
 
-        float h1 = MIN(100.f + SCREEN_H / calc_dist(a1) * 30.f, SCREEN_H);
-        float h2 = MIN(100.f + SCREEN_H / calc_dist(a2) * 30.f, SCREEN_H);
+        float h1 = MIN(100.f + SCREEN_H / rel_dist_pt(a1) * 30.f, SCREEN_H);
+        float h2 = MIN(100.f + SCREEN_H / rel_dist_pt(a2) * 30.f, SCREEN_H);
 
-        SDL_Vertex *verts = calloc(4, sizeof(SDL_Vertex));
+        SDL_Vertex *edges = calloc(4, sizeof(SDL_Vertex));
         float angc;
         float hc;
 //        float col;
 
         SDL_Color col = {
-                world.verts[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
-                world.verts[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
+                world.edges[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
+                world.edges[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
                 (int)(w_ind) * 11 % 140 + 100,
                 255
         };
@@ -250,22 +251,22 @@ static void draw_seg_3d(
                         hc = h2;
                 }
 
-                verts[v].position.x = l_on_vl(angc) * SCREEN_W;
-                verts[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
+                edges[v].position.x = l_on_vl(angc) * SCREEN_W;
+                edges[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
 
-                verts[v].color = col;
+                edges[v].color = col;
                 
 //                col = (hc / SCREEN_H) * (hc / SCREEN_H) * 255;
-//                verts[v].color.r = col;
-//                verts[v].color.g = col;
-//                verts[v].color.b = col;
-//                verts[v].color.a = 255;
+//                edges[v].color.r = col;
+//                edges[v].color.g = col;
+//                edges[v].color.b = col;
+//                edges[v].color.a = 255;
         }
 
-        rend_gm(verts, 4, world.index_a, 6);
+        rend_gm(edges, 4, world.index_a, 6);
 
-        free(verts);
-        verts = NULL;
+        free(edges);
+        edges = NULL;
 }
 
 void draw_world(
@@ -275,8 +276,7 @@ void draw_world(
         int nr_w;
 
         struct float2  inter;   // Extent of wall within FOV.
-                        // Array of segments to draw as angle pairs.
-        struct float2 *dr_segs;
+        struct float2 *dr_segs; // Array of segments to draw as angle pairs.
         int drc;
 
         for (int w = 0; w < NODE_C; ++w) {
@@ -331,4 +331,26 @@ static int find_nr_w(
         *fr_than = nr_than;
         world.walls[nearest].ckd = TRUE;
         return nearest;
-}        
+}
+
+int rq_move(
+        struct float2   newp
+) {
+        struct float2 v1, v2;
+
+        for (int w = 0; w < NODE_C; ++w) {
+                v1.x = (float)world.edges[world.walls[w].edge.x].x;
+                v1.y = (float)world.edges[world.walls[w].edge.x].y;
+
+                v2.x = (float)world.edges[world.walls[w].edge.y].x;
+                v2.y = (float)world.edges[world.walls[w].edge.y].y;
+
+                float nr = dist_to_ln(v1, v2, newp);
+
+                if (nr <= 5.f) {
+                        return FALSE;
+                }
+        }
+
+        return TRUE;
+}

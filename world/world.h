@@ -31,4 +31,8 @@ void draw_world(
         void
 );
 
+int rq_move(
+        struct float2   newp
+);
+
 #endif
