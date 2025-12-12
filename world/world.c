@@ -226,8 +226,8 @@ static void draw_seg_3d(
                 seg, &a1, &a2
         );
 
-        float h1 = MIN(100.f + SCREEN_H / calc_dist(a1) * 30.f, SCREEN_H / 2);
-        float h2 = MIN(100.f + SCREEN_H / calc_dist(a2) * 30.f, SCREEN_H / 2);
+        float h1 = MIN(100.f + SCREEN_H / calc_dist(a1) * 30.f, SCREEN_H);
+        float h2 = MIN(100.f + SCREEN_H / calc_dist(a2) * 30.f, SCREEN_H);
 
         SDL_Vertex *verts = calloc(4, sizeof(SDL_Vertex));
         float angc;
