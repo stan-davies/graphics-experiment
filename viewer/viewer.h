@@ -4,16 +4,11 @@
 #include "util/core.h"
 
 void init_viewer(
-        struct int2     _pos    ,
+        struct float2   _pos    ,
         float           _view
 );
 
-struct int2 rel_p(
-        float           r       ,
-        float           t               // Assumes angle not relative to viewer.
-);
-
-struct float2 rel_pf(
+struct float2 rel_p(
         float           r       ,
         float           t               // Assumes angle not relative to viewer.
 );

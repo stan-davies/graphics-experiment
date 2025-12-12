@@ -50,7 +50,7 @@ void loop(
                 }
 
                 draw_world();
-//                draw_viewer();
+                draw_viewer();
 
                 push_rend();
         }

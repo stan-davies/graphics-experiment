@@ -24,10 +24,8 @@
 #define DIF(a, b) (MAX(a, b) - MIN(a, b))
 #define CNT(a, b) (MIN(fabsf(a), fabsf(b)))
 
-#define TO_DEG(t) (t * 180.f / PI)
-
 static struct {
-        struct int2     pos     ;
+        struct float2   pos     ;
 
         float           view    ;       // Angle of view offset from (0, 1), in
                                         // (-pi, pi].
@@ -57,7 +55,7 @@ static void set_draw(
 );
 
 void init_viewer(
-        struct int2     _pos    ,
+        struct float2   _pos    ,
         float           _view
 ) {
         viewer.pos = _pos;
@@ -69,21 +67,7 @@ void init_viewer(
         viewer.body.h = 10;
 }
 
-struct int2 rel_p(
-        float           r       ,
-        float           t
-) {
-        adj_ang(&t, viewer.view);
-
-        struct int2 p = {
-                .x = viewer.pos.x + r * cosf(t),
-                .y = viewer.pos.y - r * sinf(t)
-        };
-
-        return p;
-}
-
-struct float2 rel_pf(
+struct float2 rel_p(
         float           r       ,
         float           t
 ) {
@@ -139,12 +123,12 @@ static void adj_ang(
 static float rel_ang(
         struct int2     v
 ) {
-        struct int2 l = { v.x - viewer.pos.x, viewer.pos.y - v.y };
+        struct float2 l = { (float)v.x - viewer.pos.x, viewer.pos.y - (float)v.y };
         if (0 == l.x) {
                 return NOT_VIS;
         }
 
-        float quo   = (float)l.y / (float)l.x;
+        float quo   = l.y / l.x;
         float v_ang = atanf(fabsf(quo));
         float add   = -PI;
 
@@ -206,23 +190,23 @@ float calc_nrst(
         struct int2     v1      ,
         struct int2     v2
 ) {
-        float lambda = (float)((v1.x - v2.x) * (v1.x - viewer.pos.x)
-                      + (v1.y - v2.y) * (v1.y - viewer.pos.y))
+        float lambda = (float)((v1.y - viewer.pos.y) * (v2.y - v1.y)
+                      - (v1.x - viewer.pos.x) * (v2.x - v1.x))
                      / (float)((v2.x - v1.x) * (v2.x - v1.x)
                       + (v2.y - v1.y) * (v2.y - v1.y));
 
-        if (lambda < 0.f) {
-                lambda = 0.f;
-        } else if (lambda > 1.f) {
-                lambda = 1.f;
+        if (lambda < 0.f || lambda > 1.f) {
+                float d1 = calc_dist(v1);
+                float d2 = calc_dist(v2);
+                return MIN(d1, d2);
         }
 
-        struct int2 to_near_p = {
-                .x = (v1.x + lambda * (v2.x - v1.x)) - viewer.pos.x,
-                .y = (v1.y + lambda * (v2.y - v1.y)) - viewer.pos.y
+        struct int2 np = {
+                .x = v1.x + lambda * (v2.x - v1.x),
+                .y = v1.y + lambda * (v2.y - v1.y)
         };
 
-        return sqrtf(to_near_p.x * to_near_p.x + to_near_p.y * to_near_p.y);
+        return calc_dist(np);
 }
 
 float calc_dist(
@@ -245,11 +229,12 @@ int spans_fov(
 void draw_viewer(
         void
 ) {
+        struct int2 vp = { viewer.pos.x, viewer.pos.y };
         rend_rc(viewer.body, bod_col);
-        rend_ln(viewer.pos, viewer.lookat, bod_col);
+        rend_ln(vp, viewer.lookat, bod_col);
 
-        rend_ln(viewer.pos, viewer.lp_la, prong_col);
-        rend_ln(viewer.pos, viewer.rp_la, prong_col);
+        rend_ln(vp, viewer.lp_la, prong_col);
+        rend_ln(vp, viewer.rp_la, prong_col);
 }
 
 int update_viewer(
@@ -299,10 +284,7 @@ void points_on_line(
         struct int2    *a1      ,
         struct int2    *a2
 ) {
-        struct float2 v = {
-                (float)viewer.pos.x,
-                (float)viewer.pos.y
-        };
+        struct float2 v = viewer.pos;
         float num, den, lambda;
 
         adj_ang(&exts.x, viewer.view);
@@ -349,12 +331,9 @@ void points_on_line(
 float l_on_vl(
         float           ang
 ) {
-        struct float2 v = {
-                (float)viewer.pos.x,
-                (float)viewer.pos.y
-        };
-        struct float2 p1 = rel_pf(FOCAL_L,  HFOV);      // Right way around?
-        struct float2 p2 = rel_pf(FOCAL_L, -HFOV);
+        struct float2 v = viewer.pos;
+        struct float2 p1 = rel_p(FOCAL_L,  HFOV);      // Right way around?
+        struct float2 p2 = rel_p(FOCAL_L, -HFOV);
         float num, den;
 
         adj_ang(&ang, viewer.view);

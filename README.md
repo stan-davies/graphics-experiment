@@ -13,7 +13,8 @@
 
 - So for now,
 + Iron out bugs in the segment splitting, including that occasional segfault.
-+ On above point, 2D renderer sometimes segfaults on startup for some reason.
++ Iron out the issues in view detection.
++ Motion doesn't work quite right, also add collision detection.
 + Make viewer emit light, so vertex distance is mapped onto brightness.
 
 - Possible extensions:

@@ -21,17 +21,15 @@
 #define MAX(a, b) (a < b ? b : a)
 
 struct wall {
-        struct int2     edge    ;
-
+        struct int2     edge    ;       // Indices in `world.edges` of edges.
         struct float2   angs    ;       // Relative (to viewer) angle to each
                                         // vertex of wall.
-        struct float2   extent  ;       // x = left most, y = right most, both
-                                        // in radians relative to viewer,
-                                        // bounded by FOV
+        struct float2   extent  ;       // Corresponds to x/y in edge, may not
+                                        // be left/right. In radians relative
+                                        // to viewer, bounded by FOV
         float           ext_i   ;       // Interval of extent.
                                         // Probably worth not storing this.
-
-        float           dist    ;       // Current nearest wall's distance (?).
+        float           dist    ;       // Distance to this wall.
 
         int             ckd     ;       // Already analysed on current
                                         // rendering pass.
@@ -228,12 +226,13 @@ static void draw_seg_3d(
                 seg, &a1, &a2
         );
 
-        float h1 = 100.f + SCREEN_H / calc_dist(a1) * 30.f;
-        float h2 = 100.f + SCREEN_H / calc_dist(a2) * 30.f;
+        float h1 = MIN(100.f + SCREEN_H / calc_dist(a1) * 30.f, SCREEN_H / 2);
+        float h2 = MIN(100.f + SCREEN_H / calc_dist(a2) * 30.f, SCREEN_H / 2);
 
         SDL_Vertex *verts = calloc(4, sizeof(SDL_Vertex));
         float angc;
         float hc;
+//        float col;
 
         SDL_Color col = {
                 world.verts[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
@@ -255,11 +254,15 @@ static void draw_seg_3d(
                 verts[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
 
                 verts[v].color = col;
+                
+//                col = (hc / SCREEN_H) * (hc / SCREEN_H) * 255;
+//                verts[v].color.r = col;
+//                verts[v].color.g = col;
+//                verts[v].color.b = col;
+//                verts[v].color.a = 255;
         }
 
         rend_gm(verts, 4, world.index_a, 6);
-
-        log_msg("");
 
         free(verts);
         verts = NULL;
@@ -304,8 +307,6 @@ void draw_world(
                 free(dr_segs);
                 dr_segs = NULL;
         }
-
-        log_msg("\n");
 }
 
 static int find_nr_w(
@@ -321,10 +322,7 @@ static int find_nr_w(
 
                 d = world.walls[i].dist;
 
-                int con_1 = (d < nr_than);
-                int con_2 = (d >= *fr_than);
-                
-                if (con_1 && con_2) {
+                if (d < nr_than && d >= *fr_than) {
                         nearest = i;
                         nr_than = d;
                 }

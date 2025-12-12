@@ -30,7 +30,7 @@ int init(
         set_rendcl(clr);
 
         // Where to define these things?
-        struct int2 vpos = { SCREEN_W / 2, SCREEN_H / 2 };
+        struct float2 vpos = { SCREEN_W / 2.f, SCREEN_H / 2.f };
         init_viewer(vpos, 3.141598f);
 
         // Viewer must be initialised before this.
