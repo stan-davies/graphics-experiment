@@ -7,8 +7,6 @@
 #include "util/vecs/vecs.h"
 #include "world/world.h"
 
-#define PI              3.141598f
-
 #define FOV             PI / 2.f
 #define HFOV            FOV / 2.f
 #define FOCAL_L         50.f
@@ -21,8 +19,6 @@
 #define MOVE_BY         5
 #define ROTATE_BY       PI / 200.f
 
-#define MIN(a, b) (a < b ? a : b)
-#define MAX(a, b) (a < b ? b : a)
 #define DIF(a, b) (MAX(a, b) - MIN(a, b))
 #define CNT(a, b) (MIN(fabsf(a), fabsf(b)))
 
@@ -185,7 +181,7 @@ void calc_ext(
                 }
         }
 
-        *i_e = MAX(0.f, DIF(extent->x, extent->y) - 0.05f);
+        *i_e = DIF(extent->x, extent->y);
 }
 
 float rel_dist_pt(
@@ -209,7 +205,7 @@ float rel_dist_ln(
 int spans_fov(
         struct float2   interval
 ) {
-        return interval.x == -HFOV && interval.y == HFOV;
+        return interval.x + 0.001f >= HFOV && interval.y - 0.001f <= -HFOV;
 }
 
 void draw_viewer(

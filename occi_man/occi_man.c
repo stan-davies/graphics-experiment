@@ -7,9 +7,6 @@
 
 #define MAX_INTS        16
 
-#define MIN(a, b) (a < b ? a : b)
-#define MAX(a, b) (a > b ? a : b)
-
 static struct {
         struct float2  *occis   ;       // Occupied intervals.
         int             intc    ;       // Number of ...
@@ -55,11 +52,10 @@ void dest_occi_man(
         occi_man.occis = NULL;
 }
 
-int occi_close(
+int occi_closed(
         void
 ) {
-        // No idea if this works properly.
-        return spans_fov(occi_man.occis[0]);
+        return occi_man.intc > 0 && spans_fov(occi_man.occis[0]);
 }
 
 int get_seg(                            // Returns whether or not the wall was
@@ -118,11 +114,11 @@ static void add_occis(
         int             segc
 ) {
         struct float2 c_int;
-        int added = FALSE;
+        int added;
         for (int s = 0; s < segc; ++s) {
+                added = FALSE;
                 for (int i = 0; i < occi_man.intc; ++i) {
                         c_int = occi_man.occis[i];
-
                         if (ang_in_int(segs[s].x, c_int) 
                          || ang_in_int(segs[s].y, c_int)) {
                                 occi_man.occis[i].x = MAX(segs[s].x, c_int.x);

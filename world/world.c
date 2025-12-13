@@ -15,13 +15,9 @@
 #define MODE_2D         2
 #define MODE_3D         3
 
-#define PI              3.141598f
-#define TO_DEG(a) (a * 180.f / PI)
-
-#define MIN(a, b) (a < b ? a : b)
-#define MAX(a, b) (a < b ? b : a)
-
 struct wall {
+        int             id      ;
+
         struct int2     edge    ;       // Indices in `world.edges` of edges.
         struct float2   angs    ;       // Relative (to viewer) angle to each
                                         // vertex of wall.
@@ -67,6 +63,8 @@ static int find_nr_w(
 void init_world(
         void
 ) {
+        int id_c = 1;
+
         world.edges = calloc(NODE_C, sizeof(struct int2));
         world.walls = calloc(NODE_C, sizeof(struct wall));
 
@@ -84,6 +82,8 @@ void init_world(
 
                 world.walls[i].edge.x = i;
                 world.walls[i].edge.y = (i + 1) % 4;
+
+                world.walls[i].id = id_c++;
         }
 
         int ofi;
@@ -94,6 +94,8 @@ void init_world(
 
                 world.walls[i].edge.x = ofi + 4;
                 world.walls[i].edge.y = (ofi + 1) % 4 + 4;
+
+                world.walls[i].id = id_c++;
         }
 
         recalc_world();
@@ -177,12 +179,20 @@ void check_mclick(
                 return;
         }
 
+        struct int2 mp = { m.x, m.y };
+        float dmp = rel_dist_pt(mp);
+
         struct int2 v;
         for (int i = 0; i < NODE_C; ++i) {
                 v = world.edges[i];
                 if (v.x - 10 < m.x && v.x + 10 > m.x
                  && v.y - 10 < m.y && v.y + 10 > m.y) {
                         world.v_held = i;
+                        printf("%d: %f c: %f\n",
+                                world.walls[i].id,
+                                world.walls[i].dist,
+                                dmp
+                        );
                         return;
                 }
         }
@@ -285,7 +295,7 @@ void draw_world(
 
         ready_occi_man();
 
-        while (-1 != (nr_w = find_nr_w(&nr))) {
+        while (!occi_closed() && -1 != (nr_w = find_nr_w(&nr))) {
                 if (world.walls[nr_w].extent.x < world.walls[nr_w].extent.y) {
                         inter.x = world.walls[nr_w].extent.y;
                         inter.y = world.walls[nr_w].extent.x;
@@ -316,7 +326,7 @@ static int find_nr_w(
         float nr_than = FAR;
         float d;
         for (int i = 0; i < NODE_C; ++i) {
-                if (0 == world.walls[i].ext_i || world.walls[i].ckd) {
+                if (0.f == world.walls[i].ext_i || world.walls[i].ckd) {
                         continue;
                 }
 

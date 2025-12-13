@@ -12,9 +12,7 @@
 
 
 - So for now,
-+ Iron out bugs in the segment splitting, including that occasional segfault.
-+ Iron out the issues in view detection.
-+ Make collision detection work consistently.
++ Work out if segment splitting is causing a crash.
 + Make viewer emit light, so vertex distance is mapped onto brightness.
 
 - Possible extensions:
@@ -25,6 +23,8 @@ output can just be kind of prebaked though, so long as the lights don't move.
 º Texturing.
 
 
-- So perplexed by that segfault, seems to sometimes be something to do with
+- So perplexed by that crash, seems to sometimes be something to do with
   `SDL_Event` stuff, which is only from key checking, and othertimes from
   within pushing the rendered stuff so possibly bad data or something?
+- Note it actually isn't a segfault a lot of the time, but rather something to
+  do with freeing corrupted data, so some problem with lord knows what.

@@ -15,7 +15,7 @@ void dest_occi_man(
         void
 );
 
-int occi_close(
+int occi_closed(
         void
 );
 
