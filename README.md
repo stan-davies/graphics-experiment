@@ -13,7 +13,11 @@
 
 - So for now,
 + Work out if segment splitting is causing a crash.
-+ Make viewer emit light, so vertex distance is mapped onto brightness.
++ Check out the little bugs that crop up from view detection when walls are at
+funny angles.
++ Make viewer emit light, so vertex distance is mapped onto brightness. Also
+split the floor and ceiling each into six triangles so as to give a sense of
+light on them.
 
 - Possible extensions:
 º Dithering on walls.
@@ -28,3 +32,7 @@ output can just be kind of prebaked though, so long as the lights don't move.
   within pushing the rendered stuff so possibly bad data or something?
 - Note it actually isn't a segfault a lot of the time, but rather something to
   do with freeing corrupted data, so some problem with lord knows what.
+- The crash only ever seems to happen on startup, never during running.
+  Although actually it does occasionally happen upon hitting x. Weird stuff.
+- Miraculously, that patch to extension calculation seems to have stopped it.
+  Absolutely no idea why that would be the case.

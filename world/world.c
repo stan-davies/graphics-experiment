@@ -179,20 +179,12 @@ void check_mclick(
                 return;
         }
 
-        struct int2 mp = { m.x, m.y };
-        float dmp = rel_dist_pt(mp);
-
         struct int2 v;
         for (int i = 0; i < NODE_C; ++i) {
                 v = world.edges[i];
                 if (v.x - 10 < m.x && v.x + 10 > m.x
                  && v.y - 10 < m.y && v.y + 10 > m.y) {
                         world.v_held = i;
-                        printf("%d: %f c: %f\n",
-                                world.walls[i].id,
-                                world.walls[i].dist,
-                                dmp
-                        );
                         return;
                 }
         }
@@ -243,14 +235,14 @@ static void draw_seg_3d(
         SDL_Vertex *edges = calloc(4, sizeof(SDL_Vertex));
         float angc;
         float hc;
-//        float col;
+        float col;
 
-        SDL_Color col = {
-                world.edges[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
-                world.edges[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
-                (int)(w_ind) * 11 % 140 + 100,
-                255
-        };
+//        SDL_Color col = {
+//                world.edges[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
+//                world.edges[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
+//                (int)(w_ind) * 11 % 140 + 100,
+//                255
+//        };
 
         for (int v = 0; v < 4; ++v) {
                 if (v % 3 == 0) {
@@ -264,13 +256,13 @@ static void draw_seg_3d(
                 edges[v].position.x = l_on_vl(angc) * SCREEN_W;
                 edges[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
 
-                edges[v].color = col;
+//                edges[v].color = col;
                 
-//                col = (hc / SCREEN_H) * (hc / SCREEN_H) * 255;
-//                edges[v].color.r = col;
-//                edges[v].color.g = col;
-//                edges[v].color.b = col;
-//                edges[v].color.a = 255;
+                col = (hc / SCREEN_H) * (hc / SCREEN_H) * 255;
+                edges[v].color.r = col;
+                edges[v].color.g = col;
+                edges[v].color.b = col;
+                edges[v].color.a = 255;
         }
 
         rend_gm(edges, 4, world.index_a, 6);
