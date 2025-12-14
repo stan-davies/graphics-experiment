@@ -80,47 +80,44 @@ void init_world(
                 world.wall_idx[i] = i <= 3 ? i : i % 2 * 2;
         }
 
-// Completely scrap all of this and do it with rectangles instead?
         world.bg = calloc(BACKGROUND_VERTS, sizeof(SDL_Vertex));
         struct float2 tr = { 0.f, 0.f };
         struct float2 a = { 0.5f, 0.f };
-        float swp;
-        int tmp;
-        for (int i = 0; i < BACKGROUND_VERTS; ++i) {
+        float tmp;
+        for (int i = 1; i < BACKGROUND_VERTS; ++i) {
                 world.bg[i].position.x = tr.x;
                 world.bg[i].position.y = tr.y;
                 
-                tmp = 80 * (tr.x == SCREEN_W / 2.f);
+                tmp = 255 * (tr.x == SCREEN_W / 2.f);
+                log_msg("%f == %f ? %d", tr.x, SCREEN_W / 2.f, 255 * (tr.x == SCREEN_W / 2.f));
                 world.bg[i].color.r = tmp;
                 world.bg[i].color.g = tmp;
                 world.bg[i].color.b = tmp;
                 world.bg[i].color.a = 255;
 
+                tr.x += a.x * SCREEN_W;
+                tr.y += a.y * SCREEN_H;
+
                 if (0 == i % 2 && i > 0) {
-                        swp = a.x;
+                        tmp = a.x;
                         a.x = a.y;
-                        a.y = swp;
+                        a.y = tmp;
                 }
 
                 if (4 == i) {
                         a.x *= -1;
                 }
-
-                tr.x += a.x * SCREEN_W;
-                tr.y += a.y * SCREEN_H;
         }
 
         world.bg_idx = calloc(BACKGROUND_IDXS, sizeof(int));
 // Corners.
         for (int i = 0; i < 4; ++i) {
-                tmp = 2 * i + 1;
-                for (int j = 0; j < 3; ++j) {
-                        world.bg_idx[3 * i + j] = (tmp + j) % 8;
+                for (int j = 2 * i + 1; j < 2 * i + 3; ++j) {
+                        world.bg_idx[i] = j % 8;
                 }
         }
-// Midsections.
         for (int i = 0; i < 6; ++i) {
-                world.bg_idx[i + 12] = (2 * i + (i > 2 ? 5 : 7)) % 8;
+                world.bg_idx[i] = (2 * i + (i > 2 ? 5 : 7)) % 8;
         }
 
 // Should all be coming from a file eventually.
@@ -285,8 +282,8 @@ static void draw_seg_3d(
                 seg, &a1, &a2
         );
 
-        float h1 = MIN(150.f + SCREEN_H / rel_dist_pt(a1) * 30.f, SCREEN_H);
-        float h2 = MIN(150.f + SCREEN_H / rel_dist_pt(a2) * 30.f, SCREEN_H);
+        float h1 = MIN(100.f + SCREEN_H / rel_dist_pt(a1) * 30.f, SCREEN_H);
+        float h2 = MIN(100.f + SCREEN_H / rel_dist_pt(a2) * 30.f, SCREEN_H);
 
         SDL_Vertex *edges = calloc(4, sizeof(SDL_Vertex));
         float angc;
@@ -314,7 +311,7 @@ static void draw_seg_3d(
 
 //                edges[v].color = col;
                 
-                col = MIN((hc / SCREEN_H) * (hc / SCREEN_H) * 200, 100);
+                col = (hc / SCREEN_H) * (hc / SCREEN_H) * 255;
                 edges[v].color.r = col;
                 edges[v].color.g = col;
                 edges[v].color.b = col;

@@ -15,9 +15,7 @@
 + Work out if segment splitting is causing a crash.
 + Check out the little bugs that crop up from view detection when walls are at
 funny angles.
-+ Make viewer emit light, so vertex distance is mapped onto brightness. Also
-split the floor and ceiling each into six triangles so as to give a sense of
-light on them.
++ Light-emitting viewer looks kind of trash.
 
 - Possible extensions:
 º Dithering on walls.
