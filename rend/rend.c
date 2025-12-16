@@ -38,10 +38,6 @@ void rend_cl(
         SDL_SetRenderDrawColor(rend.r, 
                 rend.clr_col.r, rend.clr_col.g, rend.clr_col.b, 255);
         SDL_RenderClear(rend.r);
-
-//        SDL_Rect floor = { 0, SCREEN_H / 2, SCREEN_W, SCREEN_H / 2 };
-//        SDL_Color fl_c = { 60, 60, 60, 255 };
-//        rend_rc(floor, fl_c);
 }
 
 //SDL_Texture * rend_rq_tex(

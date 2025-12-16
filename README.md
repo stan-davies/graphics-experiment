@@ -34,3 +34,4 @@ output can just be kind of prebaked though, so long as the lights don't move.
   Although actually it does occasionally happen upon hitting x. Weird stuff.
 - Miraculously, that patch to extension calculation seems to have stopped it.
   Absolutely no idea why that would be the case.
+- It isn't fixed! 16.12.25

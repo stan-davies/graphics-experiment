@@ -314,10 +314,11 @@ static void draw_seg_3d(
 
 //                edges[v].color = col;
                 
-                col = MIN((hc / SCREEN_H) * (hc / SCREEN_H) * 200, 100);
-                edges[v].color.r = col;
-                edges[v].color.g = col;
-                edges[v].color.b = col;
+//                col = MIN((hc / SCREEN_H) * (hc / SCREEN_H) * 200, 150);
+                col = MIN((hc / SCREEN_H) * (hc / SCREEN_H), 0.7f);
+                edges[v].color.r = col * 228;   // 247;
+                edges[v].color.g = col * 241;
+                edges[v].color.b = col * 247;   // 227;
                 edges[v].color.a = 255;
         }
 
@@ -337,9 +338,9 @@ void draw_world(
         struct float2 *dr_segs; // Array of segments to draw as angle pairs.
         int drc;
 
-        if (MODE_3D == world.mode) {
-                rend_gm(world.bg, BACKGROUND_VERTS, world.bg_idx, BACKGROUND_IDXS);
-        }
+//        if (MODE_3D == world.mode) {
+//                rend_gm(world.bg, BACKGROUND_VERTS, world.bg_idx, BACKGROUND_IDXS);
+//        }
 
         for (int w = 0; w < NODE_C; ++w) {
                 world.walls[w].ckd = FALSE;
