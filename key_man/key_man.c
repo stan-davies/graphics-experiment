@@ -5,6 +5,7 @@
 static struct {
         SDL_Keycode    *keys    ;
         int             num_d   ;
+        // Also store mouse position so as to add looking around with mouse.
 } key_man;
 
 void init_key_man(

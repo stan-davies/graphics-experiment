@@ -32,9 +32,6 @@ struct wall {
                                         // rendering pass.
 };
 
-#define BACKGROUND_VERTS        8       // Four corners and four midpoints.
-#define BACKGROUND_IDXS         18      // Six vertices * three indices apiece.
-
 static struct {
         struct int2    *edges   ;
 
@@ -43,9 +40,6 @@ static struct {
 // Both removable in final version.
         int             v_held  ;
         int             mode    ;
-
-        SDL_Vertex     *bg      ;
-        int            *bg_idx  ;
 
         int            *wall_idx;       // Used for indexing vertices in render.
 } world;
@@ -78,49 +72,6 @@ void init_world(
         world.wall_idx = calloc(6, sizeof(int));
         for (int i = 0; i < 6; ++i) {
                 world.wall_idx[i] = i <= 3 ? i : i % 2 * 2;
-        }
-
-// Completely scrap all of this and do it with rectangles instead?
-        world.bg = calloc(BACKGROUND_VERTS, sizeof(SDL_Vertex));
-        struct float2 tr = { 0.f, 0.f };
-        struct float2 a = { 0.5f, 0.f };
-        float swp;
-        int tmp;
-        for (int i = 0; i < BACKGROUND_VERTS; ++i) {
-                world.bg[i].position.x = tr.x;
-                world.bg[i].position.y = tr.y;
-                
-                tmp = 80 * (tr.x == SCREEN_W / 2.f);
-                world.bg[i].color.r = tmp;
-                world.bg[i].color.g = tmp;
-                world.bg[i].color.b = tmp;
-                world.bg[i].color.a = 255;
-
-                if (0 == i % 2 && i > 0) {
-                        swp = a.x;
-                        a.x = a.y;
-                        a.y = swp;
-                }
-
-                if (4 == i) {
-                        a.x *= -1;
-                }
-
-                tr.x += a.x * SCREEN_W;
-                tr.y += a.y * SCREEN_H;
-        }
-
-        world.bg_idx = calloc(BACKGROUND_IDXS, sizeof(int));
-// Corners.
-        for (int i = 0; i < 4; ++i) {
-                tmp = 2 * i + 1;
-                for (int j = 0; j < 3; ++j) {
-                        world.bg_idx[3 * i + j] = (tmp + j) % 8;
-                }
-        }
-// Midsections.
-        for (int i = 0; i < 6; ++i) {
-                world.bg_idx[i + 12] = (2 * i + (i > 2 ? 5 : 7)) % 8;
         }
 
 // Should all be coming from a file eventually.
@@ -157,12 +108,6 @@ void dest_world(
         void
 ) {
         dest_occi_man();
-
-        free(world.bg);
-        world.bg = NULL;
-
-        free(world.bg_idx);
-        world.bg_idx = NULL;
 
         free(world.wall_idx);
         world.wall_idx = NULL;
@@ -291,14 +236,13 @@ static void draw_seg_3d(
         SDL_Vertex *edges = calloc(4, sizeof(SDL_Vertex));
         float angc;
         float hc;
-        float col;
 
-//        SDL_Color col = {
-//                world.edges[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
-//                world.edges[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
-//                (int)(w_ind) * 11 % 140 + 100,
-//                255
-//        };
+        SDL_Color col = {
+                world.edges[world.walls[w_ind].edge.x].x * 23 % 140 + 100,
+                world.edges[world.walls[w_ind].edge.y].y * 17 % 140 + 100,
+                (int)(w_ind) * 11 % 140 + 100,
+                255
+        };
 
         for (int v = 0; v < 4; ++v) {
                 if (v % 3 == 0) {
@@ -312,14 +256,7 @@ static void draw_seg_3d(
                 edges[v].position.x = l_on_vl(angc) * SCREEN_W;
                 edges[v].position.y = get_los() + hc / 2.f * (v > 1 ? 1 : -1);
 
-//                edges[v].color = col;
-                
-//                col = MIN((hc / SCREEN_H) * (hc / SCREEN_H) * 200, 150);
-                col = MIN((hc / SCREEN_H) * (hc / SCREEN_H), 0.7f);
-                edges[v].color.r = col * 228;   // 247;
-                edges[v].color.g = col * 241;
-                edges[v].color.b = col * 247;   // 227;
-                edges[v].color.a = 255;
+                edges[v].color = col;
         }
 
         rend_gm(edges, 4, world.wall_idx, 6);
@@ -337,10 +274,6 @@ void draw_world(
         struct float2  inter;   // Extent of wall within FOV.
         struct float2 *dr_segs; // Array of segments to draw as angle pairs.
         int drc;
-
-//        if (MODE_3D == world.mode) {
-//                rend_gm(world.bg, BACKGROUND_VERTS, world.bg_idx, BACKGROUND_IDXS);
-//        }
 
         for (int w = 0; w < NODE_C; ++w) {
                 world.walls[w].ckd = FALSE;
