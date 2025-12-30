@@ -105,7 +105,6 @@ void rend_gm(
         if (SDL_RenderGeometry(rend.r, NULL, vxs, vxs_n, indices, ind_n) != 0) {
                 log_err("Bungled it.");
         }
-                
 }
 
 void push_rend(

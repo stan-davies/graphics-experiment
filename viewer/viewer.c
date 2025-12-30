@@ -224,6 +224,7 @@ int update_viewer(
 ) {
         SDL_Keycode k;
         int i = 0;
+        int p = FALSE;
 
         struct float2 newp = viewer.pos;
 
@@ -231,29 +232,34 @@ int update_viewer(
                 switch (k) {
                 case SDLK_w:
                         newp = rel_p(MOVE_BY, 0.f);
+                        p = TRUE;
                         break;
                 case SDLK_s:
                         newp = rel_p(MOVE_BY, PI);
+                        p = TRUE;
                         break;
                 case SDLK_a:
                         newp = rel_p(MOVE_BY, PI / 2.f);
+                        p = TRUE;
                         break;
                 case SDLK_d:
                         newp = rel_p(MOVE_BY, PI / -2.f);
+                        p = TRUE;
                         break;
                 case SDLK_e:
                         adj_ang(&viewer.view, -ROTATE_BY);
+                        p = TRUE;
                         break;
                 case SDLK_q:
                         adj_ang(&viewer.view,  ROTATE_BY);
+                        p = TRUE;
                         break;
                 default:
-                        // Is this the best thing to do here?
-                        return FALSE;
+                        break;
                 }
         }
 
-        if (1 == i) {           // Indicates no keys were pressed.
+        if (!p) {
                 return FALSE;
         }
 
